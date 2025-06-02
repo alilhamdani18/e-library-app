@@ -112,7 +112,7 @@ class _LibraryState extends State<Library> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             // Sekarang untuk tiap kategori bikin listview horizontal
             ...categorizedBooks.entries.map((entry) {
@@ -137,7 +137,7 @@ class _LibraryState extends State<Library> {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(6.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: SizedBox(
                       height: 230, // tinggi fixed untuk card horizontal
                       child: ListView.builder(
@@ -154,7 +154,6 @@ class _LibraryState extends State<Library> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
                 ],
               );
             }),

@@ -29,7 +29,7 @@ class BookCardSlide extends StatelessWidget {
                     builder: (BuildContext context) => const DetailsBook()));
               },
               child: Container(
-                width: 125,
+                width: 120,
                 height: 170,
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
@@ -39,7 +39,7 @@ class BookCardSlide extends StatelessWidget {
                       color: const Color(0x80000000),
                       spreadRadius: 1,
                       blurRadius: 3,
-                      offset: const Offset(0, 3),
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),

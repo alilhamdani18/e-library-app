@@ -30,6 +30,26 @@ var listBook = [
     'category': 'Motivation'
   },
   {
+    'image': 'assets/images/time_is_money.jpg',
+    'title': 'Time Is Money',
+    'author': 'Yoris sebastian',
+    'year': '2013',
+    'pages': '78',
+    'description': 'Buku ini adalah buku Himpelmanawaka',
+    'rating': '4.8',
+    'category': 'Motivation'
+  },
+  {
+    'image': 'assets/images/time_is_money.jpg',
+    'title': 'Time Is Money',
+    'author': 'Yoris sebastian',
+    'year': '2013',
+    'pages': '78',
+    'description': 'Buku ini adalah buku Himpelmanawaka',
+    'rating': '4.8',
+    'category': 'Motivation'
+  },
+  {
     'image': 'assets/images/merindu_baginda_nabi.jpg',
     'title': 'Merindu Baginda Nabi',
     'author': 'Habiburrahman El-Shirazy',
