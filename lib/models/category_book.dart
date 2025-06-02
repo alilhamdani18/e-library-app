@@ -12,4 +12,5 @@ var categoryData = [
   {"icon": Icons.person, "label": "Motivation", "color": primaryColor},
   {"icon": Icons.science_outlined, "label": "Science", "color": primaryColor},
   {"icon": Icons.menu_book_rounded, "label": "Novel", "color": primaryColor},
+  {"icon": Icons.menu_rounded, "label": "Lainnya", "color": primaryColor},
 ];

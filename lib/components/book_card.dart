@@ -1,15 +1,15 @@
-import 'package:e_library/models/library/loan_book_sheet.dart';
+import 'package:e_library/views/pages/library/loan_book_sheet.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:flutter/material.dart';
 
-class BookList extends StatefulWidget {
+class BookCard extends StatefulWidget {
   final String image;
   final String title;
   final String author;
   final String year;
   final String rating;
 
-  const BookList({
+  const BookCard({
     super.key,
     required this.image,
     required this.title,
@@ -19,12 +19,11 @@ class BookList extends StatefulWidget {
   });
 
   @override
-  State<BookList> createState() => _BookListState();
+  State<BookCard> createState() => _BookCardState();
 }
 
-class _BookListState extends State<BookList> {
+class _BookCardState extends State<BookCard> {
   bool isBookmarked = false;
-  bool isRated = false;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -93,17 +92,11 @@ class _BookListState extends State<BookList> {
                           ),
                           Row(
                             children: [
-                              InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      isRated = !isRated;
-                                    });
-                                  },
-                                  child: Icon(
-                                    isRated ? Icons.star : Icons.star_border,
-                                    color: Colors.amber,
-                                    size: 30,
-                                  )),
+                              Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                                size: 30,
+                              ),
                               SizedBox(
                                 width: 8,
                               ),

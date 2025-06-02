@@ -1,6 +1,6 @@
 import 'package:e_library/models/list_book.dart';
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/components/book_list.dart';
+import 'package:e_library/components/book_card.dart';
 import 'package:flutter/material.dart';
 
 class LoanBook extends StatefulWidget {
@@ -65,7 +65,7 @@ class _LoanBookState extends State<LoanBook> {
                     SingleChildScrollView(
                       child: Column(
                         children: listBook
-                            .map((e) => BookList(
+                            .map((e) => BookCard(
                                   image: e['image'] as String,
                                   title: e['title'] as String,
                                   author: e['author'] as String,
@@ -81,7 +81,7 @@ class _LoanBookState extends State<LoanBook> {
                         children: [
                           Column(
                             children: listBook
-                                .map((e) => BookList(
+                                .map((e) => BookCard(
                                       image: e['image'] as String,
                                       title: e['title'] as String,
                                       author: e['author'] as String,

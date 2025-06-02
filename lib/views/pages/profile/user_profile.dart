@@ -228,6 +228,108 @@ class _UserProfileState extends State<UserProfile> {
                       SizedBox(
                         height: 20,
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Phone',
+                                style: TextStyle(
+                                    fontFamily: 'InterSemiBold', fontSize: 16),
+                              ),
+                              Text(
+                                '081945437744',
+                                style: TextStyle(
+                                    color: textGreyColor,
+                                    fontFamily: 'InterSemiBold',
+                                    fontSize: 16),
+                              ),
+                            ],
+                          ),
+                          TextButton(
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(25)),
+                                  ),
+                                  builder: (_) => BottomSheetWidget(
+                                    title: 'Edit Nomor Telepon',
+                                    hintText: 'Masukkan Nomor Baru',
+                                    buttonText: 'Simpan',
+                                    initialValue:
+                                        '081945437744', // atau apapun isi defaultnya
+                                  ),
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size(50, 30),
+                              ),
+                              child: Text(
+                                'Edit',
+                                style: TextStyle(fontSize: 14),
+                              ))
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Alamat',
+                                style: TextStyle(
+                                    fontFamily: 'InterSemiBold', fontSize: 16),
+                              ),
+                              Text(
+                                'Dasan Baru Barat, Kalijaga Selatan',
+                                style: TextStyle(
+                                    color: textGreyColor,
+                                    fontFamily: 'InterSemiBold',
+                                    fontSize: 16),
+                              ),
+                            ],
+                          ),
+                          TextButton(
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(25)),
+                                  ),
+                                  builder: (_) => BottomSheetWidget(
+                                    title: 'Edit Alamat',
+                                    hintText: 'Masukkan Alamat Baru',
+                                    buttonText: 'Simpan',
+                                    initialValue:
+                                        'Dasan Baru Barat, Kalijaga Selatan', // atau apapun isi defaultnya
+                                  ),
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size(50, 30),
+                              ),
+                              child: Text(
+                                'Edit',
+                                style: TextStyle(fontSize: 14),
+                              ))
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
                     ],
                   ),
                 ],

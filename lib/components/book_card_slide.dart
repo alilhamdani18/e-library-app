@@ -2,16 +2,16 @@ import 'package:e_library/utils/colors.dart';
 import 'package:e_library/views/pages/library/detail_book.dart';
 import 'package:flutter/material.dart';
 
-class RecommendedBook extends StatelessWidget {
+class BookCardSlide extends StatelessWidget {
   final String image;
   final String author;
-  final String label;
+  final String title;
 
-  const RecommendedBook({
+  const BookCardSlide({
     super.key,
     required this.image,
     required this.author,
-    required this.label,
+    required this.title,
   });
 
   @override
@@ -19,7 +19,7 @@ class RecommendedBook extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 20),
       child: SizedBox(
-        width: 150, // Menentukan lebar maksimal dari kontainer
+        width: 120, // Menentukan lebar maksimal dari kontainer
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -29,8 +29,8 @@ class RecommendedBook extends StatelessWidget {
                     builder: (BuildContext context) => const DetailsBook()));
               },
               child: Container(
-                width: 150,
-                height: 200,
+                width: 125,
+                height: 170,
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
@@ -38,7 +38,7 @@ class RecommendedBook extends StatelessWidget {
                     BoxShadow(
                       color: const Color(0x80000000),
                       spreadRadius: 1,
-                      blurRadius: 5,
+                      blurRadius: 3,
                       offset: const Offset(0, 3),
                     ),
                   ],
@@ -55,18 +55,16 @@ class RecommendedBook extends StatelessWidget {
               ),
             ),
             Text(
-              label,
+              title,
               style: TextStyle(
                 fontFamily: 'InterBold',
-                fontSize: 16,
+                fontSize: 14,
                 color: primaryColor,
               ),
               softWrap: true,
               overflow: TextOverflow.ellipsis,
-              maxLines: 2, // Membatasi maksimal 2 baris
+              maxLines: 1, // Membatasi maksimal 2 baris
             ),
-            const SizedBox(
-                height: 4), // Memberi jarak kecil antara label dan author
             Text(
               author,
               style: TextStyle(
@@ -76,7 +74,7 @@ class RecommendedBook extends StatelessWidget {
               ),
               softWrap: true,
               overflow: TextOverflow.ellipsis,
-              maxLines: 2, // Membatasi maksimal 2 baris
+              maxLines: 1, // Membatasi maksimal 2 baris
             ),
           ],
         ),

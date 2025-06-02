@@ -2,11 +2,10 @@ import 'package:e_library/models/list_book.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:e_library/views/pages/library/library.dart';
 import 'package:e_library/views/pages/profile/profile.dart';
-import 'package:e_library/components/book_list.dart';
-import 'package:e_library/components/recommended_book_home.dart';
+import 'package:e_library/components/book_card.dart';
+import 'package:e_library/components/book_card_slide.dart';
 import 'package:flutter/material.dart';
 import 'package:e_library/models/category_book.dart';
-import 'package:e_library/models/recommended_book.dart';
 import 'package:e_library/components/book_category.dart';
 
 class Home extends StatefulWidget {
@@ -270,11 +269,11 @@ class _HomeState extends State<Home> {
                                   child: Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: recommendedBook
-                                        .map((e) => RecommendedBook(
+                                    children: listBook
+                                        .map((e) => BookCardSlide(
                                               image: e['image'] as String,
                                               author: e['author'] as String,
-                                              label: e['label'] as String,
+                                              title: e['title'] as String,
                                             ))
                                         .toList(),
                                   ),
@@ -283,7 +282,7 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 5),
+                        SizedBox(height: 20),
                         Container(
                           padding: EdgeInsets.all(0),
                           child: Row(
@@ -311,10 +310,13 @@ class _HomeState extends State<Home> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
-                        Column(
+                        SizedBox(height: 5),
+                        ListView(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
                           children: listBook
-                              .map((e) => BookList(
+                              .map((e) => BookCard(
                                     image: e['image'] as String,
                                     title: e['title'] as String,
                                     author: e['author'] as String,
@@ -322,7 +324,7 @@ class _HomeState extends State<Home> {
                                     rating: e['rating'] as String,
                                   ))
                               .toList(),
-                        ),
+                        )
                       ],
                     ),
                   )
