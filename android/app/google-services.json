@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "72451776465",
+    "project_id": "e-library-himpelmanawaka",
+    "storage_bucket": "e-library-himpelmanawaka.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72451776465:android:bb91c7bf9592699fbccaf0",
+        "android_client_info": {
+          "package_name": "com.himpelmanawaka.e_library"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "72451776465-vdk39qv86kd4945vp3641a43hsn247av.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.himpelmanawaka.e_library",
+            "certificate_hash": "f84b350e50a96112c5967342a9aa837763f1b885"
+          }
+        },
+        {
+          "client_id": "72451776465-3st0h00u1ldbtk8r24k91cmi1tbh8eff.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_wlI1Ak-WA78mN0mDgDN4dOlpHJhxz68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "72451776465-3st0h00u1ldbtk8r24k91cmi1tbh8eff.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
