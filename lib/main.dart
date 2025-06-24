@@ -1,11 +1,14 @@
 import 'package:e_library/utils/colors.dart';
 import 'package:e_library/views/main_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
 
   // Atur warna status bar
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(

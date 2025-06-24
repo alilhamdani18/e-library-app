@@ -4,8 +4,11 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.0' // atau versi yang kamu pakai
+        classpath 'com.android.tools.build:gradle:8.1.4' // atau versi yang kamu pakai
         classpath 'com.google.gms:google-services:4.4.2' // ✅ tambahkan ini
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0"
+
+
     }
 }
 

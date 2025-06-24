@@ -109,7 +109,7 @@ class _ProfileState extends State<Profile> {
                                 builder: (context) => const UserProfile()),
                           );
                         },
-                        childColor: const Color.fromARGB(255, 6, 128, 185),
+                        childColor: const Color.fromARGB(255, 4, 114, 31),
                       ),
                       const SizedBox(height: 10),
                       ProfileMenuItem(
@@ -122,7 +122,7 @@ class _ProfileState extends State<Profile> {
                                 builder: (context) => const SavedBook()),
                           );
                         },
-                        childColor: const Color.fromARGB(255, 194, 101, 7),
+                        childColor: const Color.fromARGB(255, 4, 114, 31),
                       ),
                       const SizedBox(height: 10),
                       ProfileMenuItem(
@@ -135,7 +135,7 @@ class _ProfileState extends State<Profile> {
                                 builder: (context) => const LoanBook()),
                           );
                         },
-                        childColor: const Color.fromARGB(255, 155, 192, 6),
+                        childColor: const Color.fromARGB(255, 4, 114, 31),
                       ),
                       const SizedBox(height: 10),
                       ProfileMenuItem(
