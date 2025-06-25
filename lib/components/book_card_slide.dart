@@ -1,4 +1,5 @@
 import 'package:e_library/utils/colors.dart';
+import 'package:e_library/views/main_screen.dart';
 import 'package:e_library/views/pages/library/detail_book.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +27,10 @@ class BookCardSlide extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => const DetailsBook()));
+                    builder: (BuildContext context) => const MainScreen(
+                          initialIndex: 1,
+                          nestedPage: DetailsBook(),
+                        )));
               },
               child: Container(
                 width: 120,

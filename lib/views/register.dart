@@ -1,6 +1,11 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:e_library/utils/colors.dart';
+import 'package:e_library/utils/dialog.dart';
+import 'package:e_library/views/main_screen.dart';
+import 'package:e_library/widgets/set_password.dart';
 import 'package:flutter/material.dart';
 import 'package:e_library/views/login.dart';
+import 'package:e_library/services/auth_service.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -15,6 +20,77 @@ class _RegisterState extends State<Register> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController userController = TextEditingController();
+
+  void _handleRegister() async {
+    final name = userController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (name.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
+      final result = await AuthService().signUpWithEmail(name, email, password);
+
+      if (!mounted) return;
+
+      if (result == null) {
+        showAwesomeLibraryDialog(
+          context,
+          title: 'Register Berhasil!',
+          message: 'Silahkan login',
+          dialogType: DialogType.success,
+          autoClose: true,
+          onOk: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => const Login(),
+              ),
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(result)));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Semua field wajib diisi')),
+      );
+    }
+  }
+
+  Future<void> _handleGoogleSignUp() async {
+    final user = await AuthService().signInWithGoogle();
+
+    if (!mounted) return;
+
+    if (user != null) {
+      final isNewUser =
+          user.metadata.creationTime == user.metadata.lastSignInTime;
+
+      if (isNewUser) {
+        // Jika user baru, arahkan ke halaman buat password
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SetPasswordPage(email: user.email ?? ''),
+          ),
+        );
+      } else {
+        // Jika bukan user baru, langsung ke halaman utama
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainScreen(initialIndex: 0),
+          ),
+        );
+      }
+    } else {
+      // Gagal login Google
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login dengan Google gagal')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +128,7 @@ class _RegisterState extends State<Register> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Text(
-                          'Username',
+                          'Nama Lengkap',
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             fontFamily: 'InterMedium',
@@ -79,7 +155,7 @@ class _RegisterState extends State<Register> {
                                   BorderSide(color: primaryColor, width: 2)),
                           filled: true,
                           fillColor: greyBtnColor,
-                          hintText: 'myusername18',
+                          hintText: 'myname18',
                           hintStyle: TextStyle(
                             color: textGreyColor,
                           )),
@@ -177,36 +253,20 @@ class _RegisterState extends State<Register> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
-                    child: GestureDetector(
-                      onTap: () {
-                        if (emailController.text.isNotEmpty &&
-                            passwordController.text.isNotEmpty) {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      const Login()));
-                        } else {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      const Register()));
-                        }
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                            color: primaryColor,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 50),
+                        backgroundColor: primaryColor,
+                        shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
-                        child: Text(
-                          'Daftar',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontFamily: 'InterBold',
-                              fontSize: 16,
-                              color: textColor),
-                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
+                      onPressed: _handleRegister,
+                      child: Text('Daftar',
+                          style: TextStyle(
+                              color: textColor,
+                              fontSize: 16,
+                              fontFamily: 'InterSemiBold')),
                     ),
                   ),
                   Row(
@@ -228,35 +288,31 @@ class _RegisterState extends State<Register> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: primaryColor),
-                            color: greyBtnColor,
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/google-icon.png',
-                              width: 24,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Text(
-                                'Masuk dengan Google',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: 'InterSemiBold',
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
+                    child: ElevatedButton.icon(
+                      onPressed: _handleGoogleSignUp,
+                      icon: Image.asset(
+                        'assets/images/google-icon.png',
+                        width: 24,
+                      ),
+                      label: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        child: Text(
+                          'Sign Up dengan Google',
+                          style: TextStyle(
+                            fontFamily: 'InterSemiBold',
+                            fontSize: 14,
+                          ),
                         ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: greyBtnColor,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        side: BorderSide(color: primaryColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        minimumSize: const Size.fromHeight(50),
                       ),
                     ),
                   ),

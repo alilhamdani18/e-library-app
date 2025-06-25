@@ -1,7 +1,6 @@
 import 'package:e_library/models/list_book.dart';
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/views/pages/library/library.dart';
-import 'package:e_library/views/pages/profile/profile.dart';
+import 'package:e_library/views/main_screen.dart';
 import 'package:e_library/components/book_card.dart';
 import 'package:e_library/components/book_card_slide.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +52,9 @@ class _HomeState extends State<Home> {
                               onPressed: () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        const Profile()));
+                                        const MainScreen(
+                                          initialIndex: 2,
+                                        )));
                               },
                               child: CircleAvatar(
                                   backgroundColor: primaryColor,
@@ -101,53 +102,53 @@ class _HomeState extends State<Home> {
                         SizedBox(
                           height: 20,
                         ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: greyBtnColor,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Row(
-                                  children: [
-                                    SizedBox(width: 15),
-                                    Icon(
-                                      Icons.search,
-                                      color: greyColor,
-                                    ),
-                                    Expanded(
-                                      child: TextFormField(
-                                        decoration: InputDecoration(
-                                          border: OutlineInputBorder(
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          hintText: 'Search',
-                                          filled: false,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: primaryColor,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: EdgeInsets.all(8),
-                              child: Icon(
-                                Icons.search,
-                                size: 40,
-                                color: textColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20),
+                        // Row(
+                        //   children: [
+                        //     Expanded(
+                        //       child: Container(
+                        //         width: double.infinity,
+                        //         decoration: BoxDecoration(
+                        //           color: greyBtnColor,
+                        //           borderRadius: BorderRadius.circular(10),
+                        //         ),
+                        //         child: Row(
+                        //           children: [
+                        //             SizedBox(width: 15),
+                        //             Icon(
+                        //               Icons.search,
+                        //               color: greyColor,
+                        //             ),
+                        //             Expanded(
+                        //               child: TextFormField(
+                        //                 decoration: InputDecoration(
+                        //                   border: OutlineInputBorder(
+                        //                     borderSide: BorderSide.none,
+                        //                   ),
+                        //                   hintText: 'Search',
+                        //                   filled: false,
+                        //                 ),
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //     ),
+                        //     SizedBox(width: 10),
+                        //     Container(
+                        //       decoration: BoxDecoration(
+                        //         color: primaryColor,
+                        //         borderRadius: BorderRadius.circular(10),
+                        //       ),
+                        //       padding: EdgeInsets.all(8),
+                        //       child: Icon(
+                        //         Icons.search,
+                        //         size: 40,
+                        //         color: textColor,
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
+                        // SizedBox(height: 20),
 
                         Container(
                           // height: 100,
@@ -187,7 +188,9 @@ class _HomeState extends State<Home> {
                                                 MaterialPageRoute(
                                                     builder: (BuildContext
                                                             context) =>
-                                                        const Library()));
+                                                        const MainScreen(
+                                                          initialIndex: 1,
+                                                        )));
                                           },
                                           child: Text(
                                             'Jelajah Pustaka',
@@ -299,7 +302,9 @@ class _HomeState extends State<Home> {
                                 onPressed: () {
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          const Library()));
+                                          const MainScreen(
+                                            initialIndex: 1,
+                                          )));
                                 },
                                 child: Text(
                                   'Lihat Semua',

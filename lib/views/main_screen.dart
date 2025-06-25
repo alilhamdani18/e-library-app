@@ -5,14 +5,22 @@ import 'package:e_library/views/pages/library/library.dart';
 import 'package:e_library/views/pages/profile/profile.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int initialIndex;
+  final Widget? nestedPage;
+  const MainScreen({super.key, this.initialIndex = 0, this.nestedPage});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   // List halaman yang akan ditampilkan
   final List<Widget> _pages = [
@@ -30,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: widget.nestedPage ?? _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: primaryColor,
         items: const <BottomNavigationBarItem>[

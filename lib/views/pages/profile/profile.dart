@@ -1,4 +1,7 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:e_library/services/auth_service.dart';
 import 'package:e_library/utils/colors.dart';
+import 'package:e_library/utils/dialog.dart';
 import 'package:e_library/views/login.dart';
 import 'package:e_library/views/pages/profile/about_app.dart';
 import 'package:e_library/views/pages/profile/loan_book.dart';
@@ -16,6 +19,39 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   int myIndex = 2;
+
+  void _handleLogout(BuildContext context) {
+    // Langkah 1: Konfirmasi logout
+    showAwesomeLibraryDialog(
+      context,
+      title: 'Konfirmasi Logout',
+      message: 'Apakah kamu yakin ingin keluar dari akun?',
+      dialogType: DialogType.question,
+      showCancelBtn: true,
+      okText: 'Ya, Keluar',
+      cancelText: 'Batal',
+      onOk: () async {
+        await AuthService().signOut();
+
+        if (!context.mounted) return;
+
+        // Langkah 2: Notifikasi berhasil logout
+        showAwesomeLibraryDialog(
+          context,
+          title: 'Logout Berhasil',
+          message: 'Kamu telah berhasil keluar dari akun.',
+          dialogType: DialogType.success,
+          onOk: () {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const Login()),
+              (route) => false,
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,11 +196,7 @@ class _ProfileState extends State<Profile> {
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const Login()),
-                      );
-                    },
+                    onPressed: () => _handleLogout(context),
                     child: const Text(
                       'Logout',
                       style: TextStyle(

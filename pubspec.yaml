@@ -40,6 +40,7 @@ dependencies:
   cloud_firestore: ^4.17.0
   google_sign_in: ^6.2.1
   shared_preferences: ^2.2.2
+  awesome_dialog: ^3.1.0
 
 dev_dependencies:
   flutter_test:

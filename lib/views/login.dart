@@ -1,7 +1,10 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/views/pages/home/home.dart';
+import 'package:e_library/utils/dialog.dart';
+import 'package:e_library/views/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:e_library/views/register.dart';
+import 'package:e_library/services/auth_service.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,6 +18,61 @@ class _LoginState extends State<Login> {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+
+  Future<void> _handleLogin() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email dan password wajib diisi')),
+      );
+      return;
+    }
+
+    final emailRegex = RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+    if (!emailRegex.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Format email tidak valid')),
+      );
+      return;
+    }
+
+    final result = await AuthService().signInWithEmail(email, password);
+
+    if (!mounted) return;
+
+    if (result == null) {
+      // Tampilkan dialog berhasil login
+      showAwesomeLibraryDialog(
+        context,
+        title: 'Login Berhasil!',
+        message: 'Selamat datang kembali!',
+        dialogType: DialogType.success,
+        autoClose: true,
+        onOk: () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const MainScreen(initialIndex: 0),
+            ),
+          );
+        },
+      );
+    } else {
+      // Gagal login
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result)),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,11 +81,11 @@ class _LoginState extends State<Login> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 48, 20, 20),
+              padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
               child: Column(
                 children: [
                   Image.asset('assets/images/logo.png',
-                      width: 100, height: 100),
+                      width: 150, height: 150),
                   Text(
                     'Selamat Datang',
                     style: TextStyle(
@@ -70,13 +128,13 @@ class _LoginState extends State<Login> {
                           contentPadding: const EdgeInsets.all(8),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                                width: 0, style: BorderStyle.none),
+                            borderSide:
+                                BorderSide(width: 0, style: BorderStyle.none),
                           ),
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: primaryColor, width: 2)),
+                              borderSide:
+                                  BorderSide(color: primaryColor, width: 2)),
                           filled: true,
                           fillColor: greyBtnColor,
                           hintText: 'name@gmail.com',
@@ -121,13 +179,13 @@ class _LoginState extends State<Login> {
                           contentPadding: const EdgeInsets.all(8),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                                width: 0, style: BorderStyle.none),
+                            borderSide:
+                                BorderSide(width: 0, style: BorderStyle.none),
                           ),
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: primaryColor, width: 2)),
+                              borderSide:
+                                  BorderSide(color: primaryColor, width: 2)),
                           filled: true,
                           fillColor: greyBtnColor,
                           hintText: 'Password',
@@ -138,88 +196,20 @@ class _LoginState extends State<Login> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
-                    child: GestureDetector(
-                      onTap: () {
-                        if (emailController.text.isNotEmpty &&
-                            passwordController.text.isNotEmpty) {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      const Home()));
-                        } else {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      const Login()));
-                        }
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                            color: primaryColor,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 50),
+                        backgroundColor: primaryColor,
+                        shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
-                        child: Text(
-                          'Masuk',
-                          textAlign: TextAlign.center,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      onPressed: _handleLogin,
+                      child: Text('Masuk',
                           style: TextStyle(
-                              fontFamily: 'InterBold',
+                              color: textColor,
                               fontSize: 16,
-                              color: textColor),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          'atau',
-                          style:
-                              TextStyle(color: textGreyColor, fontSize: 16),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: primaryColor),
-                            color: greyBtnColor,
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/google-icon.png',
-                              width: 24,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Text(
-                                'Masuk dengan Google',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: 'InterSemiBold',
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                              fontFamily: 'InterSemiBold')),
                     ),
                   ),
                 ],
@@ -240,10 +230,9 @@ class _LoginState extends State<Login> {
                   Center(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    const Register()));
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const Register()));
                       },
                       child: Text(
                         'Daftar Sekarang',
