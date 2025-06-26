@@ -41,6 +41,7 @@ class _ProfileState extends State<Profile> {
           title: 'Logout Berhasil',
           message: 'Kamu telah berhasil keluar dari akun.',
           dialogType: DialogType.success,
+          autoClose: true,
           onOk: () {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const Login()),

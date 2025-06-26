@@ -1,6 +1,5 @@
-import 'package:e_library/utils/colors.dart';
-import 'package:e_library/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:e_library/utils/colors.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
@@ -10,7 +9,156 @@ class UserProfile extends StatefulWidget {
 }
 
 class _UserProfileState extends State<UserProfile> {
-  int myIndex = 2;
+  String username = 'alilhd_18';
+  String email = 'alilhamdanialil782@gmail.com';
+  String nama = 'M. Alil Hamdani';
+  String phone = '081945437744';
+  String alamat = 'Dasan Baru Barat, Kalijaga Selatan';
+
+  void _showEditProfileSheet() {
+    final usernameController = TextEditingController(text: username);
+    final emailController = TextEditingController(text: email);
+    final namaController = TextEditingController(text: nama);
+    final phoneController = TextEditingController(text: phone);
+    final alamatController = TextEditingController(text: alamat);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        maxChildSize: 0.85,
+        // minChildSize: 0.4,
+        initialChildSize: 0.60,
+        builder: (_, scrollController) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            left: 24,
+            right: 24,
+            top: 12,
+          ),
+          child: ListView(
+            controller: scrollController,
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Edit Profil',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: 'InterSemiBold',
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Username
+              TextFormField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Email
+              TextFormField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Nama Lengkap
+              TextFormField(
+                controller: namaController,
+                decoration: InputDecoration(
+                  labelText: 'Nama Lengkap',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Nomor Telepon
+              TextFormField(
+                controller: phoneController,
+                decoration: InputDecoration(
+                  labelText: 'Nomor Telepon',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Alamat
+              TextFormField(
+                controller: alamatController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Alamat',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Simpan button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      username = usernameController.text;
+                      email = emailController.text;
+                      nama = namaController.text;
+                      phone = phoneController.text;
+                      alamat = alamatController.text;
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,16 +167,40 @@ class _UserProfileState extends State<UserProfile> {
           onTap: () {
             Navigator.of(context).pop();
           },
-          child: Icon(
+          child: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.white,
           ),
         ),
-        title: Text(
+        title: const Text(
           'User Profile',
           style: TextStyle(
               color: Colors.white, fontFamily: 'InterSemiBold', fontSize: 20),
         ),
+        actions: [
+          PopupMenuTheme(
+            data: PopupMenuThemeData(
+              textStyle: TextStyle(fontSize: 14),
+              menuPadding: EdgeInsets.all(0),
+            ),
+            child: PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _showEditProfileSheet();
+                }
+              },
+              itemBuilder: (BuildContext context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Text('Edit Profil'),
+                  ),
+                ];
+              },
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+            ),
+          )
+        ],
         backgroundColor: primaryColor,
         centerTitle: true,
       ),
@@ -36,308 +208,77 @@ class _UserProfileState extends State<UserProfile> {
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               width: double.infinity,
-              // height: 300,
               decoration: BoxDecoration(
-                  color: primaryColor,
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30))),
+                color: primaryColor,
+                borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30)),
+              ),
               child: Column(
                 children: [
-                  SizedBox(
-                    height: 50,
-                  ),
+                  const SizedBox(height: 50),
                   Container(
-                    // padding: EdgeInsets.all(35),
                     width: 130,
                     height: 130,
                     decoration: BoxDecoration(
                       color: greyBtnColor,
                       shape: BoxShape.circle,
-                      image: DecorationImage(
+                      image: const DecorationImage(
                           image: AssetImage('assets/images/google-icon.png'),
                           fit: BoxFit.fill),
                     ),
                   ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  ElevatedButton(onPressed: () {}, child: Text('Ganti Profil'))
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                      onPressed: () {}, child: const Text('Ganti Profil'))
                 ],
               ),
             ),
             Container(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               width: double.infinity,
               child: Column(
                 children: [
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Username',
-                                style: TextStyle(
-                                    fontFamily: 'InterSemiBold', fontSize: 16),
-                              ),
-                              Text(
-                                'alilhd_18',
-                                style: TextStyle(
-                                    color: textGreyColor,
-                                    fontFamily: 'InterSemiBold',
-                                    fontSize: 16),
-                              ),
-                            ],
-                          ),
-                          TextButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(25)),
-                                  ),
-                                  builder: (_) => BottomSheetWidget(
-                                    title: 'Edit Username',
-                                    hintText: 'Masukkan username baru',
-                                    buttonText: 'Simpan',
-                                    initialValue:
-                                        'alilhd_18', // atau apapun isi defaultnya
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(50, 30),
-                              ),
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(fontSize: 14),
-                              ))
-                        ],
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Email',
-                                style: TextStyle(
-                                    fontFamily: 'InterSemiBold', fontSize: 16),
-                              ),
-                              Text(
-                                'alilhamdanialil782@gmail.com',
-                                style: TextStyle(
-                                    color: textGreyColor,
-                                    fontFamily: 'InterSemiBold',
-                                    fontSize: 16),
-                              ),
-                            ],
-                          ),
-                          TextButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(25)),
-                                  ),
-                                  builder: (_) => BottomSheetWidget(
-                                    title: 'Edit Email',
-                                    hintText: 'Masukkan Email Baru',
-                                    buttonText: 'Simpan',
-                                    initialValue:
-                                        'alilhamdani782@gmail.com', // atau apapun isi defaultnya
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(50, 30),
-                              ),
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(fontSize: 14),
-                              ))
-                        ],
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Nama Lengkap',
-                                style: TextStyle(
-                                    fontFamily: 'InterSemiBold', fontSize: 16),
-                              ),
-                              Text(
-                                'M. Alil Hamdani',
-                                style: TextStyle(
-                                    color: textGreyColor,
-                                    fontFamily: 'InterSemiBold',
-                                    fontSize: 16),
-                              ),
-                            ],
-                          ),
-                          TextButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(25)),
-                                  ),
-                                  builder: (_) => BottomSheetWidget(
-                                    title: 'Edit Nama Lengkap',
-                                    hintText: 'Masukkan Nama Baru',
-                                    buttonText: 'Simpan',
-                                    initialValue:
-                                        'M. Alil Hamdani', // atau apapun isi defaultnya
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(50, 30),
-                              ),
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(fontSize: 14),
-                              ))
-                        ],
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Phone',
-                                style: TextStyle(
-                                    fontFamily: 'InterSemiBold', fontSize: 16),
-                              ),
-                              Text(
-                                '081945437744',
-                                style: TextStyle(
-                                    color: textGreyColor,
-                                    fontFamily: 'InterSemiBold',
-                                    fontSize: 16),
-                              ),
-                            ],
-                          ),
-                          TextButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(25)),
-                                  ),
-                                  builder: (_) => BottomSheetWidget(
-                                    title: 'Edit Nomor Telepon',
-                                    hintText: 'Masukkan Nomor Baru',
-                                    buttonText: 'Simpan',
-                                    initialValue:
-                                        '081945437744', // atau apapun isi defaultnya
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(50, 30),
-                              ),
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(fontSize: 14),
-                              ))
-                        ],
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Alamat',
-                                style: TextStyle(
-                                    fontFamily: 'InterSemiBold', fontSize: 16),
-                              ),
-                              Text(
-                                'Dasan Baru Barat, Kalijaga Selatan',
-                                style: TextStyle(
-                                    color: textGreyColor,
-                                    fontFamily: 'InterSemiBold',
-                                    fontSize: 16),
-                              ),
-                            ],
-                          ),
-                          TextButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(25)),
-                                  ),
-                                  builder: (_) => BottomSheetWidget(
-                                    title: 'Edit Alamat',
-                                    hintText: 'Masukkan Alamat Baru',
-                                    buttonText: 'Simpan',
-                                    initialValue:
-                                        'Dasan Baru Barat, Kalijaga Selatan', // atau apapun isi defaultnya
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(50, 30),
-                              ),
-                              child: Text(
-                                'Edit',
-                                style: TextStyle(fontSize: 14),
-                              ))
-                        ],
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                    ],
-                  ),
+                  _buildProfileRow('Username', username),
+                  _buildProfileRow('Email', email),
+                  _buildProfileRow('Nama Lengkap', nama),
+                  _buildProfileRow('Phone', phone),
+                  _buildProfileRow('Alamat', alamat),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileRow(String title, String value) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(
+                title,
+                style:
+                    const TextStyle(fontFamily: 'InterSemiBold', fontSize: 16),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                    color: textGreyColor,
+                    fontFamily: 'InterSemiBold',
+                    fontSize: 16),
+              ),
+            ]),
+          ],
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }

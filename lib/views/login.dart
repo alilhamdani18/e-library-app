@@ -80,143 +80,145 @@ class _LoginState extends State<Login> {
       body: InkWell(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
-              child: Column(
-                children: [
-                  Image.asset('assets/images/logo.png',
-                      width: 150, height: 150),
-                  Text(
-                    'Selamat Datang',
-                    style: TextStyle(
-                        fontFamily: 'InterBold',
-                        fontSize: 28,
-                        color: primaryColor),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      'Masukkan email dan password untuk melanjutkan ke aplikasi',
-                      textAlign: TextAlign.center,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
+                child: Column(
+                  children: [
+                    Image.asset('assets/images/logo.png',
+                        width: 150, height: 150),
+                    Text(
+                      'Selamat Datang',
                       style: TextStyle(
-                          fontFamily: 'InterMedium',
-                          fontSize: 16,
-                          color: textGreyColor),
+                          fontFamily: 'InterBold',
+                          fontSize: 28,
+                          color: primaryColor),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(
-                          'Email',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        'Masukkan email dan password untuk melanjutkan ke aplikasi',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
                             fontFamily: 'InterMedium',
                             fontSize: 16,
-                          ),
-                        ),
+                            color: textGreyColor),
                       ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: TextFormField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.all(8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(width: 0, style: BorderStyle.none),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: primaryColor, width: 2)),
-                          filled: true,
-                          fillColor: greyBtnColor,
-                          hintText: 'name@gmail.com',
-                          hintStyle: TextStyle(
-                            color: textGreyColor,
-                          )),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(
-                          'Password',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            fontFamily: 'InterMedium',
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: TextFormField(
-                      controller: passwordController,
-                      obscureText: isHide,
-                      decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                              onPressed: () {
-                                isHide = !isHide;
-                                setState(() {});
-                              },
-                              icon: Icon(
-                                isHide
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                color: textGreyColor,
-                              )),
-                          contentPadding: const EdgeInsets.all(8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(width: 0, style: BorderStyle.none),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: primaryColor, width: 2)),
-                          filled: true,
-                          fillColor: greyBtnColor,
-                          hintText: 'Password',
-                          hintStyle: TextStyle(
-                            color: textGreyColor,
-                          )),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50),
-                        backgroundColor: primaryColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      onPressed: _handleLogin,
-                      child: Text('Masuk',
-                          style: TextStyle(
-                              color: textColor,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Text(
+                            'Email',
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontFamily: 'InterMedium',
                               fontSize: 16,
-                              fontFamily: 'InterSemiBold')),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: TextFormField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(width: 0, style: BorderStyle.none),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: primaryColor, width: 2)),
+                            filled: true,
+                            fillColor: greyBtnColor,
+                            hintText: 'name@gmail.com',
+                            hintStyle: TextStyle(
+                              color: textGreyColor,
+                            )),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Text(
+                            'Password',
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontFamily: 'InterMedium',
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: TextFormField(
+                        controller: passwordController,
+                        obscureText: isHide,
+                        decoration: InputDecoration(
+                            suffixIcon: IconButton(
+                                onPressed: () {
+                                  isHide = !isHide;
+                                  setState(() {});
+                                },
+                                icon: Icon(
+                                  isHide
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: textGreyColor,
+                                )),
+                            contentPadding: const EdgeInsets.all(8),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(width: 0, style: BorderStyle.none),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: primaryColor, width: 2)),
+                            filled: true,
+                            fillColor: greyBtnColor,
+                            hintText: 'Password',
+                            hintStyle: TextStyle(
+                              color: textGreyColor,
+                            )),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size(double.infinity, 50),
+                          backgroundColor: primaryColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        onPressed: _handleLogin,
+                        child: Text('Masuk',
+                            style: TextStyle(
+                                color: textColor,
+                                fontSize: 16,
+                                fontFamily: 'InterSemiBold')),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

@@ -1,7 +1,9 @@
-import 'package:e_library/components/book_card_slide.dart';
-import 'package:e_library/models/list_book.dart';
-import 'package:e_library/utils/colors.dart';
+import 'package:e_library/views/pages/library/category_page.dart';
 import 'package:flutter/material.dart';
+import 'package:e_library/components/book_card_slide.dart';
+import 'package:e_library/models/book.dart';
+import 'package:e_library/services/api_service.dart'; // pastikan file ini sudah ada
+import 'package:e_library/utils/colors.dart';
 
 class Library extends StatefulWidget {
   const Library({super.key});
@@ -11,17 +13,58 @@ class Library extends StatefulWidget {
 }
 
 class _LibraryState extends State<Library> {
-  // Misal ini data buku berdasarkan kategori (dummy contoh)
-  final Map<String, List<Map<String, dynamic>>> categorizedBooks = {
-    'Buku Motivation':
-        listBook.where((b) => b['category'] == 'Motivation').toList(),
-    'Buku Novel': listBook.where((b) => b['category'] == 'Novel').toList(),
-    'Buku Pendidikan':
-        listBook.where((b) => b['category'] == 'Pendidikan').toList(),
-  };
+  final ApiService _apiService = ApiService();
+
+  List<Book> allBooks = [];
+  Map<String, List<Book>> categorizedBooks = {};
+  bool isLoading = true;
+  String errorMessage = '';
+
+  final List<String> categories = ['Romance', 'Motivation', 'Novel', 'Manga'];
+
+  @override
+  void initState() {
+    super.initState();
+    getBooks();
+  }
+
+  Future<void> getBooks() async {
+    // print('Mengambil data buku...');
+    try {
+      final books = await _apiService.getBooks();
+      // print('Berhasil dapat ${books.length} buku');
+      setState(() {
+        allBooks = books;
+        for (var category in categories) {
+          categorizedBooks[category] =
+              books.where((b) => b.category == category).toList();
+        }
+        isLoading = false;
+      });
+    } catch (e) {
+      // print('Gagal mengambil buku: $e');
+      // print(stackTrace);
+      setState(() {
+        errorMessage = e.toString();
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (errorMessage.isNotEmpty) {
+      return Scaffold(
+        body: Center(child: Text(errorMessage)),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -40,7 +83,6 @@ class _LibraryState extends State<Library> {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            // Bagian search tetap sama
             Row(
               children: [
                 Column(
@@ -105,7 +147,7 @@ class _LibraryState extends State<Library> {
                   ),
                   padding: const EdgeInsets.all(8),
                   child: const Icon(
-                    Icons.filter_list,
+                    Icons.search,
                     size: 40,
                     color: Colors.white,
                   ),
@@ -114,44 +156,57 @@ class _LibraryState extends State<Library> {
             ),
             const SizedBox(height: 10),
 
-            // Sekarang untuk tiap kategori bikin listview horizontal
+            // Tampilkan buku berdasarkan kategori
             ...categorizedBooks.entries.map((entry) {
               final category = entry.key;
               final books = entry.value;
 
+              if (books.isEmpty) return const SizedBox();
+
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        category,
+                        'Buku $category',
                         style: TextStyle(
                           color: primaryColor,
                           fontFamily: 'InterBold',
                           fontSize: 18,
                         ),
                       ),
-                      TextButton(onPressed: () {}, child: Text('Lihat Semua')),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: SizedBox(
-                      height: 230, // tinggi fixed untuk card horizontal
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: books.length,
-                        itemBuilder: (context, index) {
-                          final book = books[index];
-                          return BookCardSlide(
-                            image: book['image'] as String,
-                            title: book['title'] as String,
-                            author: book['author'] as String,
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CategoryBooksPage(
+                                category: category,
+                                books: books,
+                              ),
+                            ),
                           );
                         },
+                        child: const Text('Lihat Semua'),
                       ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 230,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: books.length,
+                      itemBuilder: (context, index) {
+                        final book = books[index];
+                        return BookCardSlide(
+                          image: book.coverUrl ?? '',
+                          title: book.title,
+                          author: book.author,
+                        );
+                      },
                     ),
                   ),
                 ],

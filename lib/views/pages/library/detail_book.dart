@@ -3,7 +3,10 @@ import 'package:e_library/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class DetailsBook extends StatefulWidget {
-  const DetailsBook({super.key});
+  // final String bookId;
+  const DetailsBook({
+    super.key,
+  });
 
   @override
   State<DetailsBook> createState() => _DetailsBookState();

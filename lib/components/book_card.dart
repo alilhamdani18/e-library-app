@@ -24,148 +24,117 @@ class BookCard extends StatefulWidget {
 
 class _BookCardState extends State<BookCard> {
   bool isBookmarked = false;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: secondaryColor,
-                  boxShadow: [
-                    BoxShadow(
-                        color: Color.fromARGB(128, 10, 174, 114),
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: Offset(0, 3))
-                  ],
-                ),
-
-                // height: 200,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(widget.image,
-                              width: 100, fit: BoxFit.cover),
-                        )
-                      ],
-                    ),
-                    SizedBox(width: 20),
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.title,
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontFamily: 'InterBold',
-                              fontSize: 18,
-                            ),
-                            softWrap: true,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: secondaryColor,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromARGB(128, 10, 174, 114),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                widget.image,
+                width: 110,
+                height: 150,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(Icons.broken_image),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.title,
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontFamily: 'InterBold',
+                        fontSize: 18,
+                      )),
+                  Text(widget.author,
+                      style: TextStyle(
+                        color: textGreyColor,
+                        fontFamily: 'InterMedium',
+                        fontSize: 14,
+                      )),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Text(widget.year,
+                        style: TextStyle(
+                          color: textGreyColor,
+                          fontFamily: 'InterMedium',
+                          fontSize: 14,
+                        )),
+                  ),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 20),
+                      const SizedBox(width: 6),
+                      Text(widget.rating,
+                          style: TextStyle(
+                            color: textGreyColor,
+                            fontFamily: 'InterMedium',
+                            fontSize: 14,
+                          )),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isDismissible: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => BottomSheetLoanBook(),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          Text(
-                            widget.author,
-                            style: TextStyle(
-                              color: textGreyColor,
-                              fontFamily: 'InterMedium',
-                              fontSize: 14,
-                            ),
-                            softWrap: true,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 5),
-                            child: Text(widget.year,
-                                style: TextStyle(
-                                  color: textGreyColor,
-                                  fontFamily: 'InterMedium',
-                                  fontSize: 14,
-                                )),
-                          ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                                size: 30,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                                child: Text(widget.rating,
-                                    style: TextStyle(
-                                      color: textGreyColor,
-                                      fontFamily: 'InterMedium',
-                                      fontSize: 14,
-                                    )),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Column(
-                                children: [
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isDismissible: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder: (context) =>
-                                              BottomSheetLoanBook(),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: primaryColor,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(15))),
-                                      child: Text(
-                                        'Pinjam Buku',
-                                        style: TextStyle(color: textColor),
-                                      ))
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        isBookmarked = !isBookmarked;
-                                      });
-                                    },
-                                    icon: Icon(
-                                      isBookmarked
-                                          ? Icons.bookmark
-                                          : Icons.bookmark_border,
-                                    ),
-                                    color: primaryColor,
-                                    iconSize: 30,
-                                  )
-                                ],
-                              ),
-                            ],
-                          )
-                        ],
+                        ),
+                        child: Text('Pinjam Buku',
+                            style: TextStyle(color: textColor)),
                       ),
-                    ),
-                  ],
-                )),
-          ),
-        ],
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            isBookmarked = !isBookmarked;
+                          });
+                        },
+                        icon: Icon(
+                          isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

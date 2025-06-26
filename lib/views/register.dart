@@ -95,263 +95,271 @@ class _RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Image.asset('assets/images/logo.png',
-                      width: 100, height: 100),
-                  Text(
-                    'Selamat Datang',
-                    style: TextStyle(
-                        fontFamily: 'InterBold',
-                        fontSize: 28,
-                        color: primaryColor),
-                  ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 56, 16, 16),
+                    child: Column(
+                      children: [
+                        Image.asset('assets/images/logo.png',
+                            width: 100, height: 100),
+                        Text(
+                          'Selamat Datang',
+                          style: TextStyle(
+                              fontFamily: 'InterBold',
+                              fontSize: 28,
+                              color: primaryColor),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            'Masukkan username, email, dan password untuk membuat akun',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontFamily: 'InterMedium',
+                                fontSize: 16,
+                                color: textGreyColor),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                'Nama Lengkap',
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontFamily: 'InterMedium',
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: TextFormField(
+                            controller: userController,
+                            decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.all(8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      width: 0, style: BorderStyle.none),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                        color: primaryColor, width: 2)),
+                                filled: true,
+                                fillColor: greyBtnColor,
+                                hintText: 'myname18',
+                                hintStyle: TextStyle(
+                                  color: textGreyColor,
+                                )),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                'Email',
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontFamily: 'InterMedium',
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: TextFormField(
+                            controller: emailController,
+                            decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.all(8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      width: 0, style: BorderStyle.none),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                        color: primaryColor, width: 2)),
+                                filled: true,
+                                fillColor: greyBtnColor,
+                                hintText: 'name@gmail.com',
+                                hintStyle: TextStyle(
+                                  color: textGreyColor,
+                                )),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                'Password',
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontFamily: 'InterMedium',
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: TextFormField(
+                            controller: passwordController,
+                            obscureText: isHide,
+                            decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      isHide = !isHide;
+                                      setState(() {});
+                                    },
+                                    icon: Icon(
+                                      isHide
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      color: textGreyColor,
+                                    )),
+                                contentPadding: const EdgeInsets.all(8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      width: 0, style: BorderStyle.none),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                        color: primaryColor, width: 2)),
+                                filled: true,
+                                fillColor: greyBtnColor,
+                                hintText: 'Password',
+                                hintStyle: TextStyle(
+                                  color: textGreyColor,
+                                )),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(double.infinity, 50),
+                              backgroundColor: primaryColor,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            onPressed: _handleRegister,
+                            child: Text('Daftar',
+                                style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 16,
+                                    fontFamily: 'InterSemiBold')),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                'atau',
+                                style: TextStyle(
+                                    color: textGreyColor, fontSize: 16),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: ElevatedButton.icon(
+                            onPressed: _handleGoogleSignUp,
+                            icon: Image.asset(
+                              'assets/images/google-icon.png',
+                              width: 24,
+                            ),
+                            label: const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 14),
+                              child: Text(
+                                'Sign Up dengan Google',
+                                style: TextStyle(
+                                  fontFamily: 'InterSemiBold',
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: greyBtnColor,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              side: BorderSide(color: primaryColor),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              minimumSize: const Size.fromHeight(50),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Sudah Punya Akun ? ',
+                  style: TextStyle(
+                    fontFamily: 'InterMedium',
+                    fontSize: 16,
+                  ),
+                ),
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) => const Login()));
+                    },
                     child: Text(
-                      'Masukkan username, email, dan password untuk membuat akun',
-                      textAlign: TextAlign.center,
+                      'Masuk Sekarang',
                       style: TextStyle(
-                          fontFamily: 'InterMedium',
-                          fontSize: 16,
-                          color: textGreyColor),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(
-                          'Nama Lengkap',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            fontFamily: 'InterMedium',
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: TextFormField(
-                      controller: userController,
-                      decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.all(8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(width: 0, style: BorderStyle.none),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: primaryColor, width: 2)),
-                          filled: true,
-                          fillColor: greyBtnColor,
-                          hintText: 'myname18',
-                          hintStyle: TextStyle(
-                            color: textGreyColor,
-                          )),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(
-                          'Email',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            fontFamily: 'InterMedium',
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: TextFormField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.all(8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(width: 0, style: BorderStyle.none),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: primaryColor, width: 2)),
-                          filled: true,
-                          fillColor: greyBtnColor,
-                          hintText: 'name@gmail.com',
-                          hintStyle: TextStyle(
-                            color: textGreyColor,
-                          )),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(
-                          'Password',
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                            fontFamily: 'InterMedium',
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: TextFormField(
-                      controller: passwordController,
-                      obscureText: isHide,
-                      decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                              onPressed: () {
-                                isHide = !isHide;
-                                setState(() {});
-                              },
-                              icon: Icon(
-                                isHide
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                color: textGreyColor,
-                              )),
-                          contentPadding: const EdgeInsets.all(8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(width: 0, style: BorderStyle.none),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: primaryColor, width: 2)),
-                          filled: true,
-                          fillColor: greyBtnColor,
-                          hintText: 'Password',
-                          hintStyle: TextStyle(
-                            color: textGreyColor,
-                          )),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50),
-                        backgroundColor: primaryColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      onPressed: _handleRegister,
-                      child: Text('Daftar',
-                          style: TextStyle(
-                              color: textColor,
-                              fontSize: 16,
-                              fontFamily: 'InterSemiBold')),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          'atau',
-                          style: TextStyle(color: textGreyColor, fontSize: 16),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: ElevatedButton.icon(
-                      onPressed: _handleGoogleSignUp,
-                      icon: Image.asset(
-                        'assets/images/google-icon.png',
-                        width: 24,
-                      ),
-                      label: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        child: Text(
-                          'Sign Up dengan Google',
-                          style: TextStyle(
-                            fontFamily: 'InterSemiBold',
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: greyBtnColor,
-                        foregroundColor: Colors.black,
-                        elevation: 0,
-                        side: BorderSide(color: primaryColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        minimumSize: const Size.fromHeight(50),
+                        fontFamily: 'InterSemibold',
+                        color: primaryColor,
+                        fontSize: 16,
                       ),
                     ),
                   ),
-                ],
-              ),
+                )
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Sudah Punya Akun ? ',
-                    style: TextStyle(
-                      fontFamily: 'InterMedium',
-                      fontSize: 16,
-                    ),
-                  ),
-                  Center(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (BuildContext context) => const Login()));
-                      },
-                      child: Text(
-                        'Masuk Sekarang',
-                        style: TextStyle(
-                          fontFamily: 'InterSemibold',
-                          color: primaryColor,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
