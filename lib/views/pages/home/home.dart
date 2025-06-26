@@ -207,7 +207,7 @@ class _HomeState extends State<Home> {
                         ),
                       ],
                     ),
-                    // SizedBox(height: 10),
+                    SizedBox(height: 10),
                     _buildRecommendedSection(),
                     SizedBox(height: 10),
                     Row(
@@ -283,6 +283,7 @@ class _HomeState extends State<Home> {
       child: Row(
         children: recommendedBooks.map((book) {
           return BookCardSlide(
+            bookId: book.id,
             image: book.coverUrl ?? '',
             author: book.author.isNotEmpty
                 ? book.author
@@ -366,6 +367,7 @@ class _HomeState extends State<Home> {
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.all(0),
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       itemCount: otherBooks.length,

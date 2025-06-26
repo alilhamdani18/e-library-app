@@ -1,5 +1,5 @@
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/views/pages/library/detail_book.dart';
+// import 'package:e_library/views/pages/library/detail_book.dart';
 import 'package:flutter/material.dart';
 
 class BottomSheetLoanBook extends StatefulWidget {
@@ -110,9 +110,7 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
                       children: [
                         ElevatedButton(
                             onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      const DetailsBook()));
+                              
                             },
                             child: Text('Lihat Detail'))
                       ],

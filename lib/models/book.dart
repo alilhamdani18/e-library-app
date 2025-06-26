@@ -3,6 +3,7 @@ class Book {
   final String id;
   final String title;
   final String author;
+  final String? year;
   final String? description;
   final String? coverUrl;
   final double? rating;
@@ -15,6 +16,7 @@ class Book {
     required this.id,
     required this.title,
     required this.author,
+    this.year,
     this.description,
     this.coverUrl,
     this.rating,
@@ -29,6 +31,7 @@ class Book {
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
       author: json['author']?.toString() ?? '',
+      year: json['year']?.toString(),
       description: json['description']?.toString(),
       coverUrl: json['coverUrl']?.toString(),
       rating: _parseDouble(json['rating']),
@@ -50,6 +53,7 @@ class Book {
       'id': id,
       'title': title,
       'author': author,
+      'year': year,
       'description': description,
       'coverUrl': coverUrl,
       'rating': rating,

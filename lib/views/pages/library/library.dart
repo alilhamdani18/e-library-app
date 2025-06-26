@@ -202,6 +202,7 @@ class _LibraryState extends State<Library> {
                       itemBuilder: (context, index) {
                         final book = books[index];
                         return BookCardSlide(
+                          bookId: book.id,
                           image: book.coverUrl ?? '',
                           title: book.title,
                           author: book.author,
