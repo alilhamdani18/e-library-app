@@ -2,6 +2,7 @@ import 'package:e_library/models/book.dart';
 import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:e_library/widgets/loan_book_sheet.dart';
+import 'package:e_library/widgets/rating_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -18,6 +19,7 @@ class _DetailsBookState extends State<DetailsBook> {
   final ApiService _apiService = ApiService();
   Book? book;
   bool isLoading = true;
+  bool isBookmarked = false;
 
   @override
   void initState() {
@@ -28,14 +30,22 @@ class _DetailsBookState extends State<DetailsBook> {
   Future<void> fetchBookDetail() async {
     try {
       final fetchedBook = await _apiService.getBookById(widget.bookId);
-      // print('Fetched book response: $fetchedBook');
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      bool bookmarked = false;
+      if (currentUser != null) {
+        bookmarked =
+            await _apiService.isBookBookmarked(currentUser.uid, widget.bookId);
+      }
 
       setState(() {
         book = Book.fromJson(fetchedBook['data']);
+        isBookmarked = bookmarked;
         isLoading = false;
       });
+      print('Bookmark status dari backend: $bookmarked');
     } catch (e) {
-      // print('Error fetching book: $e');
+      print('Error fetching book: $e');
       setState(() {
         isLoading = false;
       });
@@ -54,11 +64,31 @@ class _DetailsBookState extends State<DetailsBook> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              // implement bookmark logic
+            onPressed: () async {
+              final userId = FirebaseAuth.instance.currentUser?.uid;
+              if (userId == null) return;
+              try {
+                if (isBookmarked) {
+                  await ApiService()
+                      .removeBookmark(userId, {'bookId': widget.bookId});
+                } else {
+                  await ApiService().addBookmark(userId, {
+                    'bookId': widget.bookId, // <== perbaikan di sini
+                  });
+                }
+
+                setState(() {
+                  isBookmarked = !isBookmarked;
+                });
+                print('Sebelum toggle, isBookmarked = $isBookmarked');
+              } catch (e) {
+                debugPrint('Error updating bookmark: $e');
+              }
             },
-            icon: Icon(Icons.bookmark_border),
-            color: Colors.white,
+            icon: Icon(
+              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+              color: Colors.white,
+            ),
           )
         ],
         backgroundColor: primaryColor,
@@ -112,26 +142,55 @@ class _DetailsBookState extends State<DetailsBook> {
                                     fontSize: 14,
                                     fontFamily: 'InterSemiBold')),
                             SizedBox(height: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                final currentUser =
-                                    FirebaseAuth.instance.currentUser;
-                                if (book != null && currentUser != null) {
-                                  final userId = currentUser.uid;
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    final currentUser =
+                                        FirebaseAuth.instance.currentUser;
+                                    if (book != null && currentUser != null) {
+                                      final userId = currentUser.uid;
 
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (context) => BottomSheetLoanBook(
-                                      bookId: book!.id,
-                                      book: book!,
-                                      userId: userId,
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Text('Pinjam Buku',
-                                  style: TextStyle(color: primaryColor)),
+                                      showRatingDialog(
+                                        context: context,
+                                        userId: userId,
+                                        bookId: book!.id,
+                                        onSuccess: () {
+                                          Navigator.of(context);
+                                        },
+                                      );
+                                    }
+                                  },
+                                  child: Text('Beri Rating',
+                                      style: TextStyle(color: primaryColor)),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    final currentUser =
+                                        FirebaseAuth.instance.currentUser;
+                                    if (book != null && currentUser != null) {
+                                      final userId = currentUser.uid;
+
+                                      showModalBottomSheet(
+                                        context: context,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) =>
+                                            BottomSheetLoanBook(
+                                          bookId: book!.id,
+                                          book: book!,
+                                          userId: userId,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Text('Pinjam Buku',
+                                      style: TextStyle(color: primaryColor)),
+                                ),
+                              ],
                             ),
                           ],
                         ),

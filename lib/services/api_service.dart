@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:e_library/models/book.dart';
 import 'package:e_library/models/user.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -19,13 +20,21 @@ class ApiService {
       String userId, Map<String, dynamic> bookmarkData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/$userId/bookmarks'),
+        Uri.parse('$baseUrl/books/$userId/bookmarks'),
         headers: _headers,
         body: jsonEncode(bookmarkData),
       );
 
+      debugPrint('Response body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body);
+        final decoded = jsonDecode(response.body);
+
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        } else {
+          return {'message': decoded.toString()};
+        }
       } else {
         throw Exception('Failed to add bookmark: ${response.statusCode}');
       }
@@ -37,11 +46,16 @@ class ApiService {
   Future<Map<String, dynamic>> removeBookmark(
       String userId, Map<String, dynamic> bookmarkData) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/$userId/bookmarks'),
-        headers: _headers,
-        body: jsonEncode(bookmarkData),
-      );
+      final url = Uri.parse('$baseUrl/books/$userId/bookmarks');
+
+      final request = http.Request("DELETE", url)
+        ..headers.addAll(_headers)
+        ..body = jsonEncode(bookmarkData);
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -56,17 +70,47 @@ class ApiService {
   Future<List<dynamic>> getUserBookmarks(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/$userId/bookmarks'),
+        Uri.parse('$baseUrl/books/$userId/bookmarks'),
         headers: _headers,
       );
 
+      print("Response body: ${response.body}");
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> json = jsonDecode(response.body);
+        return json['data'] ?? [];
       } else {
         throw Exception('Failed to get bookmarks: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error getting bookmarks: $e');
+      print('Error getting bookmarks: $e');
+      return []; // ✅ Jangan return null, return list kosong jika error
+    }
+  }
+
+  Future<bool> isBookBookmarked(String userId, String bookId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/books/$userId/bookmarks'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final List bookmarks = json['data'] ?? [];
+
+        print('Semua bookmarks: $bookmarks');
+        final found = bookmarks.any((bookmark) =>
+            bookmark['book'] != null &&
+            bookmark['book']['id'].toString() == bookId);
+
+        print('Bookmark status dari backend: $found');
+        return found;
+      } else {
+        throw Exception('Failed to fetch bookmarks: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error checking bookmark: $e');
+      return false;
     }
   }
 
@@ -75,7 +119,7 @@ class ApiService {
       String userId, Map<String, dynamic> ratingData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/$userId/ratings'),
+        Uri.parse('$baseUrl/books/$userId/ratings'),
         headers: _headers,
         body: jsonEncode(ratingData),
       );
@@ -94,7 +138,7 @@ class ApiService {
       String userId, String bookId, Map<String, dynamic> ratingData) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/$userId/$bookId/ratings'),
+        Uri.parse('$baseUrl/books/$userId/$bookId/ratings'),
         headers: _headers,
         body: jsonEncode(ratingData),
       );

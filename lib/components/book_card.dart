@@ -1,7 +1,9 @@
 import 'package:e_library/models/book.dart';
+// import 'package:e_library/services/api_service.dart';
 import 'package:e_library/views/pages/library/detail_book.dart';
 // import 'package:e_library/widgets/loan_book_sheet.dart';
 import 'package:e_library/utils/colors.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BookCard extends StatefulWidget {
@@ -84,19 +86,7 @@ class _BookCardState extends State<BookCard> {
                               fontFamily: 'InterBold',
                               fontSize: 18,
                             )),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              isBookmarked = !isBookmarked;
-                            });
-                          },
-                          icon: Icon(
-                            isBookmarked
-                                ? Icons.bookmark
-                                : Icons.bookmark_border,
-                            color: primaryColor,
-                          ),
-                        ),
+                        
                       ],
                     ),
                     Text(widget.author,
@@ -136,7 +126,7 @@ class _BookCardState extends State<BookCard> {
                       ),
                       softWrap: true,
                       overflow: TextOverflow.ellipsis,
-                      maxLines: 3,
+                      maxLines: 2,
                     ),
                   ],
                 ),

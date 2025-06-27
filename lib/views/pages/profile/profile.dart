@@ -166,10 +166,14 @@ class _ProfileState extends State<Profile> {
                         icon: Icons.bookmark_added,
                         title: 'Buku Tersimpan',
                         onTap: () {
+                          final user = FirebaseAuth.instance.currentUser;
+                          final userId = user?.uid;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const SavedBook()),
+                                builder: (context) => SavedBook(
+                                      userId: userId!,
+                                    )),
                           );
                         },
                         childColor: const Color.fromARGB(255, 4, 114, 31),
