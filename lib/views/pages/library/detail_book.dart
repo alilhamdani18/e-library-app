@@ -1,7 +1,7 @@
 import 'package:e_library/models/book.dart';
 import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/views/pages/library/loan_book_sheet.dart';
+import 'package:e_library/widgets/loan_book_sheet.dart';
 import 'package:flutter/material.dart';
 
 class DetailsBook extends StatefulWidget {
@@ -27,14 +27,14 @@ class _DetailsBookState extends State<DetailsBook> {
   Future<void> fetchBookDetail() async {
     try {
       final fetchedBook = await _apiService.getBookById(widget.bookId);
-      print('Fetched book response: $fetchedBook');
+      // print('Fetched book response: $fetchedBook');
 
       setState(() {
         book = Book.fromJson(fetchedBook['data']);
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching book: $e');
+      // print('Error fetching book: $e');
       setState(() {
         isLoading = false;
       });

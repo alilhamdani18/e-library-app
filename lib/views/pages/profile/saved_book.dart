@@ -35,6 +35,7 @@ class SavedBook extends StatelessWidget {
               child: Column(
                 children: listBook
                     .map((e) => BookCard(
+                          bookId: e['bookId'] as String,
                           image: e['image'] as String,
                           title: e['title'] as String,
                           author: e['author'] as String,

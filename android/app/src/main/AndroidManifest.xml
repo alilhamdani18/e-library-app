@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.himpelmanawaka.e_library">
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="e_library"
         android:name="${applicationName}"

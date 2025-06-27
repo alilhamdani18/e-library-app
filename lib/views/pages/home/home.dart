@@ -374,6 +374,7 @@ class _HomeState extends State<Home> {
       itemBuilder: (context, index) {
         final book = otherBooks[index];
         return BookCard(
+          bookId: book.id,
           image: book.coverUrl ?? '',
           title: book.title.isNotEmpty ? book.title : 'Judul tidak tersedia',
           author:

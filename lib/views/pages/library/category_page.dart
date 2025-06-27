@@ -70,6 +70,7 @@ class CategoryBooksPage extends StatelessWidget {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: BookCard(
+                            bookId: book.id,
                             image: book.coverUrl ?? '',
                             title: book.title.isNotEmpty
                                 ? book.title

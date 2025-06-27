@@ -9,6 +9,7 @@ import 'package:e_library/views/pages/profile/saved_book.dart';
 import 'package:e_library/views/pages/profile/user_profile.dart';
 import 'package:e_library/widgets/profile_menu_item.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -19,6 +20,15 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   int myIndex = 2;
+
+  String? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentUser = FirebaseAuth.instance.currentUser;
+    userId = currentUser?.uid;
+  }
 
   void _handleLogout(BuildContext context) {
     // Langkah 1: Konfirmasi logout
@@ -140,11 +150,14 @@ class _ProfileState extends State<Profile> {
                         icon: Icons.person,
                         title: 'Data Pengguna',
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const UserProfile()),
-                          );
+                          if (userId != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UserProfile(),
+                              ),
+                            );
+                          }
                         },
                         childColor: const Color.fromARGB(255, 4, 114, 31),
                       ),

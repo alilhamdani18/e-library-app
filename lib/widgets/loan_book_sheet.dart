@@ -10,6 +10,7 @@ class BottomSheetLoanBook extends StatefulWidget {
 }
 
 class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
+  int? selectedDays;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -19,7 +20,7 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // ⬅️ menyesuaikan tinggi child
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -109,16 +110,31 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
                     Row(
                       children: [
                         ElevatedButton(
-                            onPressed: () {
-                              
-                            },
-                            child: Text('Lihat Detail'))
+                            onPressed: () {}, child: Text('Lihat Detail'))
                       ],
                     )
                   ],
                 ),
               ],
             ),
+          ),
+          Row(
+            children: [
+              Wrap(
+                spacing: 8,
+                children: [7, 14, 21].map((day) {
+                  return ChoiceChip(
+                    label: Text('$day hari'),
+                    selected: selectedDays == day,
+                    onSelected: (selected) {
+                      setState(() {
+                        selectedDays = selected ? day : null;
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),

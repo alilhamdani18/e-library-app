@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:e_library/models/book.dart';
+import 'package:e_library/models/user.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -164,55 +165,45 @@ class ApiService {
   }
 
   // User Profile Methods
-  Future<Map<String, dynamic>> getUserProfile(String userId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/profile/$userId'),
-        headers: _headers,
-      );
+  Future<User> getUserProfile(String userId) async {
+    final uri = Uri.parse('$baseUrl/users/profile/$userId');
+    final response = await http.get(uri);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Failed to get user profile: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error getting user profile: $e');
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return User.fromJson(jsonData['data']); // hanya ambil isi data
+    } else {
+      throw Exception('Failed to load user');
     }
   }
 
-  Future<Map<String, dynamic>> updateUserProfile(
-      String userId, Map<String, dynamic> profileData,
-      {File? profileImage}) async {
-    try {
-      var request = http.MultipartRequest(
-        'PUT',
-        Uri.parse('$baseUrl/profile/$userId'),
+  Future<User> updateUserProfile(
+    String userId,
+    Map<String, dynamic> profileData, {
+    File? profileImage,
+  }) async {
+    var uri = Uri.parse('$baseUrl/users/profile/$userId');
+    var request = http.MultipartRequest('PUT', uri);
+
+    profileData.forEach((key, value) {
+      request.fields[key] = value;
+    });
+
+    if (profileImage != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath('profileImage', profileImage.path),
       );
+    }
 
-      // Add form fields
-      profileData.forEach((key, value) {
-        request.fields[key] = value.toString();
-      });
+    final response = await request.send();
+    final res = await http.Response.fromStream(response);
 
-      // Add profile image if provided
-      if (profileImage != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath('profileImage', profileImage.path),
-        );
-      }
-
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception(
-            'Failed to update user profile: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error updating user profile: $e');
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      final userResponse = UserResponse.fromJson(data);
+      return userResponse.data.first;
+    } else {
+      throw Exception('Gagal update profile');
     }
   }
 

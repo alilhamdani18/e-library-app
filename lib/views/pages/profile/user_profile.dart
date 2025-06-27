@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:e_library/utils/colors.dart';
+// import 'dart:convert';
+import 'package:e_library/models/user.dart';
+import 'package:e_library/services/api_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
@@ -9,6 +13,45 @@ class UserProfile extends StatefulWidget {
 }
 
 class _UserProfileState extends State<UserProfile> {
+  late String userId;
+  User? user;
+  bool isLoading = true;
+
+  Future<void> getUserData() async {
+    try {
+      final data = await ApiService().getUserProfile(userId);
+      setState(() {
+        user = data;
+        print('User data from API: $data');
+
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      // Bisa tampilkan error snackbar/toast
+      print('Error fetching user: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final fbUser = fb.FirebaseAuth.instance.currentUser;
+    if (fbUser != null) {
+      userId = fbUser.uid;
+      print(userId);
+      getUserData();
+    } else {
+      // handle user belum login
+      print('User belum login');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   String username = 'alilhd_18';
   String email = 'alilhamdanialil782@gmail.com';
   String nama = 'M. Alil Hamdani';
@@ -16,11 +59,11 @@ class _UserProfileState extends State<UserProfile> {
   String alamat = 'Dasan Baru Barat, Kalijaga Selatan';
 
   void _showEditProfileSheet() {
-    final usernameController = TextEditingController(text: username);
-    final emailController = TextEditingController(text: email);
-    final namaController = TextEditingController(text: nama);
-    final phoneController = TextEditingController(text: phone);
-    final alamatController = TextEditingController(text: alamat);
+    final usernameController = TextEditingController(text: user?.username);
+    final emailController = TextEditingController(text: user?.email);
+    final namaController = TextEditingController(text: user?.name);
+    final phoneController = TextEditingController(text: user?.phone);
+    final alamatController = TextEditingController(text: user?.address);
 
     showModalBottomSheet(
       context: context,
@@ -204,54 +247,68 @@ class _UserProfileState extends State<UserProfile> {
         backgroundColor: primaryColor,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30)),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 50),
-                  Container(
-                    width: 130,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      color: greyBtnColor,
-                      shape: BoxShape.circle,
-                      image: const DecorationImage(
-                          image: AssetImage('assets/images/google-icon.png'),
-                          fit: BoxFit.fill),
-                    ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : user == null
+              ? const Center(child: Text('Gagal memuat data user'))
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(30),
+                            bottomRight: Radius.circular(30),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 50),
+                            Container(
+                              width: 130,
+                              height: 130,
+                              decoration: BoxDecoration(
+                                color: greyBtnColor,
+                                shape: BoxShape.circle,
+                                image: user!.profileImageUrl != null
+                                    ? DecorationImage(
+                                        image: NetworkImage(
+                                            user!.profileImageUrl!),
+                                        fit: BoxFit.cover)
+                                    : const DecorationImage(
+                                        image: AssetImage(
+                                            'assets/images/google-icon.png'),
+                                        fit: BoxFit.cover),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () {},
+                              child: const Text('Ganti Avatar'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        width: double.infinity,
+                        child: Column(
+                          children: [
+                            _buildProfileRow('Username',
+                                user!.username ?? 'username tidak ada'),
+                            _buildProfileRow('Email', user!.email),
+                            _buildProfileRow('Nama Lengkap', user!.name ?? ''),
+                            _buildProfileRow('Phone', user!.phone ?? ''),
+                            _buildProfileRow('Alamat', user!.address ?? ''),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                      onPressed: () {}, child: const Text('Ganti Profil'))
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(24),
-              width: double.infinity,
-              child: Column(
-                children: [
-                  _buildProfileRow('Username', username),
-                  _buildProfileRow('Email', email),
-                  _buildProfileRow('Nama Lengkap', nama),
-                  _buildProfileRow('Phone', phone),
-                  _buildProfileRow('Alamat', alamat),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+                ),
     );
   }
 
