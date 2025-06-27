@@ -347,7 +347,7 @@ class _HomeState extends State<Home> {
       );
     }
 
-    final otherBooks = booksFromApi;
+    final otherBooks = booksFromApi.skip(5).toList();
 
     if (otherBooks.isEmpty) {
       return Padding(
@@ -380,7 +380,7 @@ class _HomeState extends State<Home> {
           author:
               book.author.isNotEmpty ? book.author : 'Penulis tidak diketahui',
           year: book.createdAt?.year.toString() ?? '',
-          rating: book.rating?.toString() ?? '0.0',
+          averageRating: book.averageRating?.toString() ?? '0.0',
           description: book.description ?? '',
         );
       },

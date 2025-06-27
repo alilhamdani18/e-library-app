@@ -257,12 +257,19 @@ class ApiService {
   Future<List<dynamic>> getUserLoanHistory(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/loans/$userId'),
+        Uri.parse('$baseUrl/loans/user/$userId'),
         headers: _headers,
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> decoded = jsonDecode(response.body);
+        final data = decoded['data'];
+
+        if (data is List) {
+          return data;
+        } else {
+          throw Exception('Unexpected response format: data is not a List');
+        }
       } else {
         throw Exception('Failed to get loan history: ${response.statusCode}');
       }

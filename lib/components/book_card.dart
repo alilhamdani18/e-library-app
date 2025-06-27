@@ -12,7 +12,7 @@ class BookCard extends StatefulWidget {
   final String title;
   final String author;
   final String year;
-  final String rating;
+  final String averageRating;
   final String description;
 
   const BookCard({
@@ -22,7 +22,7 @@ class BookCard extends StatefulWidget {
     required this.title,
     required this.author,
     required this.year,
-    required this.rating,
+    required this.averageRating,
     required this.description,
   });
 
@@ -108,7 +108,7 @@ class _BookCardState extends State<BookCard> {
                       children: [
                         const Icon(Icons.star, color: Colors.amber, size: 20),
                         const SizedBox(width: 6),
-                        Text(widget.rating,
+                        Text(widget.averageRating,
                             style: TextStyle(
                               color: textGreyColor,
                               fontFamily: 'InterMedium',

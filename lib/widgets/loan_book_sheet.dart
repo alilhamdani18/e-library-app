@@ -175,7 +175,10 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
                         children: [
                           Icon(Icons.star, color: Colors.amber),
                           const SizedBox(width: 8),
-                          Text(widget.book?.rating.toString() ?? '0'),
+                          Text(
+                            (widget.book?.averageRating ?? 0.0)
+                                .toStringAsFixed(1),
+                          ),
                         ],
                       ),
                       SizedBox(

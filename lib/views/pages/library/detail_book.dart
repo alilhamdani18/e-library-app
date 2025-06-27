@@ -31,6 +31,7 @@ class _DetailsBookState extends State<DetailsBook> {
     try {
       final fetchedBook = await _apiService.getBookById(widget.bookId);
       final currentUser = FirebaseAuth.instance.currentUser;
+      print('Response fetchedBook: $fetchedBook');
 
       bool bookmarked = false;
       if (currentUser != null) {
@@ -43,6 +44,7 @@ class _DetailsBookState extends State<DetailsBook> {
         isBookmarked = bookmarked;
         isLoading = false;
       });
+      print('Data Buku: $book');
       print('Bookmark status dari backend: $bookmarked');
     } catch (e) {
       print('Error fetching book: $e');
@@ -206,7 +208,8 @@ class _DetailsBookState extends State<DetailsBook> {
                                 _infoColumn(
                                     Icons.star,
                                     iconColor: Colors.amber,
-                                    book!.rating?.toStringAsFixed(1) ?? '0.0',
+                                    book!.averageRating?.toStringAsFixed(1) ??
+                                        '0.0',
                                     'Rating'),
                                 _infoColumn(Icons.date_range,
                                     book!.year?.toString() ?? '-', 'Tahun'),

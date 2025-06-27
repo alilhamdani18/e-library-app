@@ -6,7 +6,7 @@ class Book {
   final String? year;
   final String? description;
   final String? coverUrl;
-  final double? rating;
+  final double? averageRating;
   final int? pages;
   final String? category;
   final DateTime? createdAt;
@@ -19,7 +19,7 @@ class Book {
     this.year,
     this.description,
     this.coverUrl,
-    this.rating,
+    this.averageRating,
     this.pages,
     this.category,
     this.createdAt,
@@ -34,7 +34,7 @@ class Book {
       year: json['year']?.toString(),
       description: json['description']?.toString(),
       coverUrl: json['coverUrl']?.toString(),
-      rating: _parseDouble(json['rating']),
+      averageRating: _parseDouble(json['averageRating']),
       pages: json['pages'] is int
           ? json['pages']
           : int.tryParse(json['pages']?.toString() ?? ''),
@@ -56,7 +56,7 @@ class Book {
       'year': year,
       'description': description,
       'coverUrl': coverUrl,
-      'rating': rating,
+      'averageRating': averageRating,
       'pages': pages,
       'category': category,
       'createdAt': createdAt?.toIso8601String(),

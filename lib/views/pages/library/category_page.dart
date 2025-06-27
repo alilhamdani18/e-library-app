@@ -79,7 +79,8 @@ class CategoryBooksPage extends StatelessWidget {
                                 ? book.author
                                 : 'Penulis tidak diketahui',
                             year: book.createdAt?.year.toString() ?? '',
-                            rating: book.rating?.toString() ?? '0.0',
+                            averageRating:
+                                book.averageRating?.toString() ?? '0.0',
                             description:
                                 book.description ?? 'Penulis tidak diketahui',
                           ),
