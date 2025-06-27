@@ -3,6 +3,7 @@ import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:e_library/widgets/loan_book_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DetailsBook extends StatefulWidget {
   final String bookId;
@@ -113,11 +114,21 @@ class _DetailsBookState extends State<DetailsBook> {
                             SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) => BottomSheetLoanBook(),
-                                );
+                                final currentUser =
+                                    FirebaseAuth.instance.currentUser;
+                                if (book != null && currentUser != null) {
+                                  final userId = currentUser.uid;
+
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => BottomSheetLoanBook(
+                                      bookId: book!.id,
+                                      book: book!,
+                                      userId: userId,
+                                    ),
+                                  );
+                                }
                               },
                               child: Text('Pinjam Buku',
                                   style: TextStyle(color: primaryColor)),

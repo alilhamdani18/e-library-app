@@ -218,7 +218,7 @@ class _HomeState extends State<Home> {
                           style: TextStyle(
                               color: primaryColor,
                               fontFamily: 'InterBold',
-                              fontSize: 20),
+                              fontSize: 18),
                         ),
                         Row(
                           children: [
@@ -381,6 +381,7 @@ class _HomeState extends State<Home> {
               book.author.isNotEmpty ? book.author : 'Penulis tidak diketahui',
           year: book.createdAt?.year.toString() ?? '',
           rating: book.rating?.toString() ?? '0.0',
+          description: book.description ?? '',
         );
       },
     );

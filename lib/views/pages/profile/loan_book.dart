@@ -72,6 +72,7 @@ class _LoanBookState extends State<LoanBook> {
                                   author: e['author'] as String,
                                   year: e['year'] as String,
                                   rating: e['rating'] as String,
+                                  description: e['description'] as String,
                                 ))
                             .toList(),
                       ),
@@ -89,6 +90,7 @@ class _LoanBookState extends State<LoanBook> {
                                       author: e['author'] as String,
                                       year: e['year'] as String,
                                       rating: e['rating'] as String,
+                                      description: e['description'] as String,
                                     ))
                                 .toList(),
                           ),

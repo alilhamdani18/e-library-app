@@ -1,5 +1,6 @@
+import 'package:e_library/models/book.dart';
 import 'package:e_library/views/pages/library/detail_book.dart';
-import 'package:e_library/widgets/loan_book_sheet.dart';
+// import 'package:e_library/widgets/loan_book_sheet.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +11,7 @@ class BookCard extends StatefulWidget {
   final String author;
   final String year;
   final String rating;
+  final String description;
 
   const BookCard({
     super.key,
@@ -19,6 +21,7 @@ class BookCard extends StatefulWidget {
     required this.author,
     required this.year,
     required this.rating,
+    required this.description,
   });
 
   @override
@@ -27,6 +30,7 @@ class BookCard extends StatefulWidget {
 
 class _BookCardState extends State<BookCard> {
   bool isBookmarked = false;
+  Book? book;
 
   @override
   Widget build(BuildContext context) {
@@ -71,12 +75,30 @@ class _BookCardState extends State<BookCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.title,
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontFamily: 'InterBold',
-                          fontSize: 18,
-                        )),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(widget.title,
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontFamily: 'InterBold',
+                              fontSize: 18,
+                            )),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isBookmarked = !isBookmarked;
+                            });
+                          },
+                          icon: Icon(
+                            isBookmarked
+                                ? Icons.bookmark
+                                : Icons.bookmark_border,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
                     Text(widget.author,
                         style: TextStyle(
                           color: textGreyColor,
@@ -105,45 +127,20 @@ class _BookCardState extends State<BookCard> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isDismissible: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => BottomSheetLoanBook(),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                          child: Text('Pinjam Buku',
-                              style: TextStyle(color: textColor)),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              isBookmarked = !isBookmarked;
-                            });
-                          },
-                          icon: Icon(
-                            isBookmarked
-                                ? Icons.bookmark
-                                : Icons.bookmark_border,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      widget.description,
+                      style: TextStyle(
+                        color: textGreyColor,
+                        fontFamily: 'InterMedium',
+                        fontSize: 14,
+                      ),
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 3,
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),

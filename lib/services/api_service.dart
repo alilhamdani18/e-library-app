@@ -149,10 +149,12 @@ class ApiService {
       Map<String, dynamic> loanData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/'),
+        Uri.parse('$baseUrl/loans'),
         headers: _headers,
         body: jsonEncode(loanData),
       );
+      print('Status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);

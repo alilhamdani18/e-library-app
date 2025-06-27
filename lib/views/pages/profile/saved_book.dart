@@ -41,6 +41,7 @@ class SavedBook extends StatelessWidget {
                           author: e['author'] as String,
                           year: e['year'] as String,
                           rating: e['rating'] as String,
+                          description: e['description'] as String,
                         ))
                     .toList(),
               ),

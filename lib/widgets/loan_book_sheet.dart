@@ -1,16 +1,91 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:e_library/models/book.dart';
+import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
+import 'package:e_library/utils/dialog.dart';
+// import 'package:e_library/views/pages/library/detail_book.dart';
 // import 'package:e_library/views/pages/library/detail_book.dart';
 import 'package:flutter/material.dart';
 
 class BottomSheetLoanBook extends StatefulWidget {
-  const BottomSheetLoanBook({super.key});
+  final String bookId;
+  final String userId;
+  final Book? book;
+  const BottomSheetLoanBook(
+      {super.key,
+      required this.bookId,
+      required this.book,
+      required this.userId});
 
   @override
   State<BottomSheetLoanBook> createState() => _BottomSheetLoanBookState();
 }
 
 class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
+  final apiService = ApiService();
+  bool isLoading = false;
   int? selectedDays;
+
+  Future<void> _submitLoanRequest() async {
+    if (selectedDays == null) {
+      showAwesomeLibraryDialog(
+        context,
+        title: 'Perhatian',
+        message: 'Masukkan durasi peminjaman buku',
+        dialogType: DialogType.info,
+        autoClose: false,
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final loanData = {
+      'bookId': widget.bookId,
+      'userId': widget.userId,
+      'loanDuration': selectedDays,
+      'status': 'pending',
+      'requestedAt': DateTime.now().toIso8601String(),
+    };
+    print('Selected days: $selectedDays');
+    print('Loan data: $loanData');
+
+    try {
+      await apiService.requestLoan(loanData);
+
+      showAwesomeLibraryDialog(context,
+          title: 'Berhasil',
+          message: 'Permintaan peminjaman berhasil diajukan.',
+          dialogType: DialogType.success,
+          autoClose: false, onOk: () {
+        Navigator.pop(context);
+      });
+    } catch (e) {
+      final errorStr = e.toString();
+      String errorMessage = 'Gagal meminjam buku.';
+
+      if (errorStr.contains('active loan request')) {
+        errorMessage =
+            'Kamu sudah memiliki permintaan peminjaman aktif untuk buku ini.';
+      }
+
+      showAwesomeLibraryDialog(
+        context,
+        title: 'Gagal',
+        message: errorMessage,
+        dialogType: DialogType.error,
+        autoClose: true,
+        autoCloseDelay: const Duration(seconds: 2),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -50,7 +125,7 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
 
           // === Detail Buku ===
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
               color: secondaryColor,
               borderRadius: BorderRadius.circular(12),
@@ -60,64 +135,88 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    'assets/images/ancika.jpg',
-                    width: 100,
-                    height: 150,
+                  child: Image.network(
+                    widget.book?.coverUrl ?? '',
+                    width: 120,
+                    height: 170,
                     fit: BoxFit.cover,
                   ),
                 ),
                 const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Ancika 1995',
-                          style:
-                              TextStyle(fontSize: 20, fontFamily: 'InterBold'),
-                        ),
-                        Text(
-                          'Pidi Baiq',
-                          style: TextStyle(
-                              fontSize: 14, fontFamily: 'IntersemiBold'),
-                        ),
-                        Text(
-                          '2021',
-                          style: TextStyle(
-                              fontSize: 14, fontFamily: 'IntersemiBold'),
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Row(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.book?.title ?? '',
+                        style: TextStyle(fontSize: 20, fontFamily: 'InterBold'),
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        widget.book?.author ?? '',
+                        style: TextStyle(
+                            fontSize: 14, fontFamily: 'InterSemiBold'),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        widget.book?.year.toString() ?? '',
+                        style: TextStyle(
+                            fontSize: 14, fontFamily: 'InterSemiBold'),
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Row(
                         children: [
-                          Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                          SizedBox(
-                            width: 8,
-                          ),
-                          Text('4.4')
+                          Icon(Icons.star, color: Colors.amber),
+                          const SizedBox(width: 8),
+                          Text(widget.book?.rating.toString() ?? '0'),
                         ],
                       ),
-                    ),
-                    Row(
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {}, child: Text('Lihat Detail'))
-                      ],
-                    )
-                  ],
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                        widget.book?.description ?? '',
+                        style: TextStyle(
+                          color: textGreyColor,
+                          fontFamily: 'InterMedium',
+                          fontSize: 14,
+                        ),
+                        softWrap: true,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                      // Row(
+                      //   children: [
+                      //     ElevatedButton(
+                      //       onPressed: () {
+                      //         Navigator.pop(context);
+                      //       },
+                      //       child: const Text('Lihat Detail'),
+                      //     ),
+                      //   ],
+                      // ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          SizedBox(height: 10),
+          Row(children: [
+            Text(
+              'Pilih Durasi Peminjaman',
+              style: TextStyle(fontSize: 16, fontFamily: 'InterSemiBold'),
+            ),
+          ]),
+          SizedBox(height: 10),
+
           Row(
             children: [
               Wrap(
@@ -150,16 +249,27 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Pinjam Buku Ini',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15),
-              ),
+              onPressed: isLoading ? null : _submitLoanRequest,
+              child: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Pinjam Buku Ini',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
             ),
           ),
+
           const SizedBox(height: 10),
         ],
       ),
