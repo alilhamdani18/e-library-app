@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String baseUrl =
-      'https://library-backend-72451776465.asia-southeast2.run.app/api';
+      'https://e-library-backend-72451776465.asia-southeast2.run.app/api';
 
   // Headers untuk request
   Map<String, String> get _headers => {
@@ -153,6 +153,28 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>?> getRatingByUserAndBook(
+      String userId, String bookId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/books/$userId/$bookId/ratings'),
+        headers:
+            _headers, // Pastikan kamu punya header ini kalau perlu Authorization, dll.
+      );
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        return body['data']; // Ambil hanya bagian `data` untuk kemudahan
+      } else if (response.statusCode == 404) {
+        return null; // Belum pernah memberi rating
+      } else {
+        throw Exception('Failed to fetch rating: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching rating: $e');
+    }
+  }
+
   Future<Map<String, dynamic>> deleteRating(
       String userId, String bookId) async {
     try {
@@ -223,33 +245,50 @@ class ApiService {
     }
   }
 
-  Future<User> updateUserProfile(
-    String userId,
-    Map<String, dynamic> profileData, {
+  Future<User> updateUserProfile({
+    required String userId,
+    Map<String, dynamic>? profileData,
     File? profileImage,
   }) async {
-    var uri = Uri.parse('$baseUrl/users/profile/$userId');
-    var request = http.MultipartRequest('PUT', uri);
+    final uri = Uri.parse('$baseUrl/users/profile/$userId');
+    final request = http.MultipartRequest('PUT', uri);
 
-    profileData.forEach((key, value) {
-      request.fields[key] = value;
-    });
-
-    if (profileImage != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath('profileImage', profileImage.path),
-      );
+    if (profileData != null && profileData.isNotEmpty) {
+      profileData.forEach((key, value) {
+        if (value != null) {
+          request.fields[key] = value.toString();
+        }
+      });
     }
 
-    final response = await request.send();
-    final res = await http.Response.fromStream(response);
+    if (profileImage != null) {
+      final multipartFile = await http.MultipartFile.fromPath(
+        'profileImage',
+        profileImage.path,
+      );
+      request.files.add(multipartFile);
+    }
 
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body);
-      final userResponse = UserResponse.fromJson(data);
-      return userResponse.data.first;
-    } else {
-      throw Exception('Gagal update profile');
+    try {
+      final streamedResponse = await request.send();
+      final res = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('Status Code: ${res.statusCode}');
+      debugPrint('Response Body: ${res.body}');
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final userResponse = SingleUserResponse.fromJson(
+            data); // ✅ ganti 'responseJson' jadi 'data'
+        return userResponse.data;
+      } else {
+        throw Exception(
+            'Gagal update profile. Status: ${res.statusCode}, Body: ${res.body}');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Exception saat update: $e');
+      debugPrint('StackTrace: $stackTrace');
+      throw Exception('Gagal update profile: ${e.toString()}');
     }
   }
 

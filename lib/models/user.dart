@@ -82,3 +82,23 @@ class UserResponse {
   }
 }
 
+
+class SingleUserResponse {
+  final bool success;
+  final String? message;
+  final User data;
+
+  SingleUserResponse({
+    required this.success,
+    required this.data,
+    this.message,
+  });
+
+  factory SingleUserResponse.fromJson(Map<String, dynamic> json) {
+    return SingleUserResponse(
+      success: json['success'] ?? false,
+      message: json['message'],
+      data: User.fromJson(json['data']),
+    );
+  }
+}

@@ -26,7 +26,7 @@ void showAwesomeLibraryDialog(
     ),
     btnOkText: okText,
     btnCancelText: cancelText,
-    btnOkOnPress: onOk ?? () {},
+    btnOkOnPress: onOk,
     btnCancelOnPress: showCancelBtn ? () {} : null,
   );
 
@@ -35,9 +35,9 @@ void showAwesomeLibraryDialog(
   if (autoClose) {
     Future.delayed(autoCloseDelay, () {
       // ignore: use_build_context_synchronously
-      if (Navigator.of(context).canPop()) {
+      if (Navigator.of(context, rootNavigator: true).canPop()) {
         // ignore: use_build_context_synchronously
-        Navigator.of(context).pop(); // Tutup dialog
+        Navigator.of(context, rootNavigator: true).pop(); // Tutup dialog
         onOk?.call(); // Jalankan callback OK
       }
     });

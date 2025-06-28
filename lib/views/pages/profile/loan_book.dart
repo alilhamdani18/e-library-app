@@ -124,14 +124,17 @@ class _LoanBookState extends State<LoanBook> {
                               children: completedLoans
                                   .map((e) => BookCard(
                                         bookId: e['bookId'] ?? '',
-                                        image: e['coverUrl'] ?? '',
-                                        title: e['title'] ?? '',
-                                        author: e['author'] ?? '',
-                                        year: e['year'] ?? '',
-                                        averageRating:
-                                            e['averageRating']?.toString() ??
-                                                '0',
-                                        description: e['description'] ?? '',
+                                        image: e['book']?['coverUrl'] ?? '',
+                                        title: e['book']?['title'] ?? '',
+                                        author: e['book']?['author'] ?? '',
+                                        year: e['book']?['year']?.toString() ??
+                                            '',
+                                        averageRating: e['book']
+                                                    ?['averageRating']
+                                                ?.toString() ??
+                                            '0.0',
+                                        description:
+                                            e['book']?['description'] ?? '',
                                       ))
                                   .toList(),
                             ),

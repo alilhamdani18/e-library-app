@@ -1,3 +1,5 @@
+// import 'dart:convert';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:e_library/models/book.dart';
 import 'package:e_library/services/api_service.dart';
@@ -231,6 +233,7 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
                     onSelected: (selected) {
                       setState(() {
                         selectedDays = selected ? day : null;
+                        debugPrint('Selected days: $selectedDays');
                       });
                     },
                   );

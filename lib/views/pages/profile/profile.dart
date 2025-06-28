@@ -10,6 +10,7 @@ import 'package:e_library/views/pages/profile/user_profile.dart';
 import 'package:e_library/widgets/profile_menu_item.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -22,12 +23,41 @@ class _ProfileState extends State<Profile> {
   int myIndex = 2;
 
   String? userId;
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     final currentUser = FirebaseAuth.instance.currentUser;
     userId = currentUser?.uid;
+    if (userId != null) {
+      fetchUserData(userId!);
+    }
+  }
+
+  Future<void> fetchUserData(String uid) async {
+    try {
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        setState(() {
+          userData = doc.data();
+          isLoading = false;
+        });
+      } else {
+        // Data tidak ditemukan
+        setState(() {
+          userData = null;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void _handleLogout(BuildContext context) {
@@ -113,9 +143,9 @@ class _ProfileState extends State<Profile> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        'alilhd18',
-                        style: TextStyle(
+                      Text(
+                        userData?['name'] ?? 'Pengguna',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontFamily: 'InterSemiBold',
                           fontSize: 20,
@@ -129,9 +159,9 @@ class _ProfileState extends State<Profile> {
                           borderRadius: BorderRadius.circular(15),
                           color: greyBtnColor,
                         ),
-                        child: const Text(
-                          'hamdanialil782@gmail.com',
-                          style: TextStyle(
+                        child: Text(
+                          userData?['email'] ?? 'Pengguna',
+                          style: const TextStyle(
                             color: Colors.blueGrey,
                             fontFamily: 'InterSemiBold',
                             fontSize: 14,

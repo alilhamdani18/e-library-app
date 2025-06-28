@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:e_library/utils/dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:e_library/utils/colors.dart';
-// import 'dart:convert';
 import 'package:e_library/models/user.dart';
 import 'package:e_library/services/api_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
@@ -22,15 +25,12 @@ class _UserProfileState extends State<UserProfile> {
       final data = await ApiService().getUserProfile(userId);
       setState(() {
         user = data;
-        print('User data from API: $data');
-
         isLoading = false;
       });
     } catch (e) {
       setState(() {
         isLoading = false;
       });
-      // Bisa tampilkan error snackbar/toast
       print('Error fetching user: $e');
     }
   }
@@ -41,27 +41,17 @@ class _UserProfileState extends State<UserProfile> {
     final fbUser = fb.FirebaseAuth.instance.currentUser;
     if (fbUser != null) {
       userId = fbUser.uid;
-      print(userId);
       getUserData();
     } else {
-      // handle user belum login
-      print('User belum login');
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  String username = 'alilhd_18';
-  String email = 'alilhamdanialil782@gmail.com';
-  String nama = 'M. Alil Hamdani';
-  String phone = '081945437744';
-  String alamat = 'Dasan Baru Barat, Kalijaga Selatan';
-
   void _showEditProfileSheet() {
-    final usernameController = TextEditingController(text: user?.username);
     final emailController = TextEditingController(text: user?.email);
-    final namaController = TextEditingController(text: user?.name);
+    final nameController = TextEditingController(text: user?.name);
     final phoneController = TextEditingController(text: user?.phone);
     final alamatController = TextEditingController(text: user?.address);
 
@@ -75,7 +65,6 @@ class _UserProfileState extends State<UserProfile> {
       builder: (context) => DraggableScrollableSheet(
         expand: false,
         maxChildSize: 0.85,
-        // minChildSize: 0.4,
         initialChildSize: 0.60,
         builder: (_, scrollController) => Padding(
           padding: EdgeInsets.only(
@@ -107,20 +96,6 @@ class _UserProfileState extends State<UserProfile> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Username
-              TextFormField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Email
               TextFormField(
                 controller: emailController,
                 decoration: InputDecoration(
@@ -131,10 +106,8 @@ class _UserProfileState extends State<UserProfile> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Nama Lengkap
               TextFormField(
-                controller: namaController,
+                controller: nameController,
                 decoration: InputDecoration(
                   labelText: 'Nama Lengkap',
                   border: OutlineInputBorder(
@@ -143,8 +116,6 @@ class _UserProfileState extends State<UserProfile> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Nomor Telepon
               TextFormField(
                 controller: phoneController,
                 decoration: InputDecoration(
@@ -155,8 +126,6 @@ class _UserProfileState extends State<UserProfile> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Alamat
               TextFormField(
                 controller: alamatController,
                 maxLines: 2,
@@ -168,8 +137,6 @@ class _UserProfileState extends State<UserProfile> {
                 ),
               ),
               const SizedBox(height: 28),
-
-              // Simpan button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -179,15 +146,40 @@ class _UserProfileState extends State<UserProfile> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      username = usernameController.text;
-                      email = emailController.text;
-                      nama = namaController.text;
-                      phone = phoneController.text;
-                      alamat = alamatController.text;
-                    });
-                    Navigator.pop(context);
+                  onPressed: () async {
+                    final data = {
+                      'name': nameController.text.trim(),
+                      // 'email': emailController.text.trim(),
+                      'phone': phoneController.text.trim(),
+                      'address': alamatController.text.trim(),
+                    };
+
+                    try {
+                      final updatedUser = await ApiService()
+                          .updateUserProfile(userId: userId, profileData: data);
+
+                      setState(() {
+                        user = updatedUser;
+                      });
+                      Navigator.pop(context);
+                      showAwesomeLibraryDialog(context,
+                          title: 'Berhasil',
+                          message: 'Profil berhasil diperbarui',
+                          dialogType: DialogType.success,
+                          autoClose: true,
+                          autoCloseDelay: Duration(seconds: 2),
+                          onOk: () {});
+                    } catch (e) {
+                      Navigator.pop(context);
+
+                      showAwesomeLibraryDialog(context,
+                          title: 'Terjadi Kesalahan',
+                          message: e.toString(),
+                          dialogType: DialogType.error,
+                          autoClose: true,
+                          autoCloseDelay: Duration(seconds: 2),
+                          onOk: () {});
+                    }
                   },
                   child: const Text(
                     'Simpan',
@@ -202,18 +194,51 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
+  Future<void> _pickAndUploadAvatar() async {
+    final picker = ImagePicker();
+    final pickedFile =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+
+    if (pickedFile != null) {
+      final imageFile = File(pickedFile.path);
+
+      try {
+        final updatedUser = await ApiService().updateUserProfile(
+          userId: userId,
+          profileImage: imageFile,
+        );
+
+        setState(() {
+          user = updatedUser;
+        });
+        print(user);
+
+        showAwesomeLibraryDialog(context,
+            title: 'Berhasil',
+            message: 'Avatar Berhasil Diperbarui',
+            dialogType: DialogType.error,
+            autoClose: true,
+            autoCloseDelay: Duration(seconds: 2));
+      } catch (e) {
+        print(e);
+        showAwesomeLibraryDialog(context,
+            title: 'Terjadi Kesalahan',
+            message: e.toString(),
+            dialogType: DialogType.error,
+            autoClose: true,
+            autoCloseDelay: Duration(seconds: 2));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: InkWell(
-          onTap: () {
-            Navigator.of(context).pop();
-          },
-          child: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-          ),
+          onTap: () => Navigator.of(context).pop(),
+          child:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
         ),
         title: const Text(
           'User Profile',
@@ -221,27 +246,17 @@ class _UserProfileState extends State<UserProfile> {
               color: Colors.white, fontFamily: 'InterSemiBold', fontSize: 20),
         ),
         actions: [
-          PopupMenuTheme(
-            data: PopupMenuThemeData(
-              textStyle: TextStyle(fontSize: 14),
-              menuPadding: EdgeInsets.all(0),
-            ),
-            child: PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'edit') {
-                  _showEditProfileSheet();
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return [
-                  PopupMenuItem<String>(
-                    value: 'edit',
-                    child: Text('Edit Profil'),
-                  ),
-                ];
-              },
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-            ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'edit') _showEditProfileSheet();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem<String>(
+                value: 'edit',
+                child: Text('Edit Profil'),
+              ),
+            ],
+            icon: const Icon(Icons.more_vert, color: Colors.white),
           )
         ],
         backgroundColor: primaryColor,
@@ -286,7 +301,7 @@ class _UserProfileState extends State<UserProfile> {
                             ),
                             const SizedBox(height: 20),
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: _pickAndUploadAvatar,
                               child: const Text('Ganti Avatar'),
                             ),
                           ],
@@ -297,8 +312,6 @@ class _UserProfileState extends State<UserProfile> {
                         width: double.infinity,
                         child: Column(
                           children: [
-                            _buildProfileRow('Username',
-                                user!.username ?? 'username tidak ada'),
                             _buildProfileRow('Email', user!.email),
                             _buildProfileRow('Nama Lengkap', user!.name ?? ''),
                             _buildProfileRow('Phone', user!.phone ?? ''),

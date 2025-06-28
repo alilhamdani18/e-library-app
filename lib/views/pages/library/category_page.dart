@@ -38,7 +38,7 @@ class CategoryBooksPage extends StatelessWidget {
         backgroundColor: primaryColor,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         child: books.isEmpty
             ? const Center(child: Text('Tidak ada buku dalam kategori ini.'))
             : Column(

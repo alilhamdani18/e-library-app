@@ -1,6 +1,8 @@
+import 'dart:convert';
+
 import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/dialog.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -9,37 +11,49 @@ void showRatingDialog({
   required BuildContext context,
   required String userId,
   required String bookId,
-  required void Function()? onSuccess,
+  double initialRating = 0,
+  String initialReview = '',
+  bool isEdit = false,
+  String? ratingId,
+  required VoidCallback onSuccess,
 }) {
-  double rating = 0;
-  final TextEditingController reviewController = TextEditingController();
+  double rating = initialRating;
+  final reviewController = TextEditingController(text: initialReview);
 
   AwesomeDialog(
     context: context,
     dialogType: DialogType.noHeader,
     animType: AnimType.scale,
-    btnOkText: "Kirim",
+    btnOkText: isEdit ? "Update" : "Kirim",
     btnCancelText: "Batal",
     btnCancelOnPress: () {},
     btnOkOnPress: () async {
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
       final ratingData = {
         'userId': userId,
         'bookId': bookId,
         'rating': rating,
         'review': reviewController.text,
       };
+      print('Data yang dikirim ke API: ${jsonEncode(ratingData)}');
 
       try {
-        await ApiService().addRating(userId!, ratingData);
-        onSuccess?.call();
+        if (isEdit) {
+          await ApiService().updateRating(userId, bookId, ratingData);
+        } else {
+          await ApiService().addRating(userId, ratingData);
+        }
+
+        onSuccess();
+
         showAwesomeLibraryDialog(
           context,
           title: 'Sukses',
-          message: 'Rating berhasil dikirim!',
+          message: isEdit
+              ? 'Rating berhasil diperbarui!'
+              : 'Rating berhasil dikirim!',
           dialogType: DialogType.success,
           autoClose: true,
+          autoCloseDelay: Duration(seconds: 1)
         );
       } catch (e) {
         debugPrint('Error detail: $e');
@@ -49,6 +63,7 @@ void showRatingDialog({
           message: 'Gagal mengirim rating.\n$e',
           dialogType: DialogType.error,
         );
+        print('Update rating error: $e');
       }
     },
     body: StatefulBuilder(
@@ -59,7 +74,7 @@ void showRatingDialog({
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Beri Rating Buku',
+                isEdit ? 'Edit Rating Buku' : 'Beri Rating Buku',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),

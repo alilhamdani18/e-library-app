@@ -148,20 +148,42 @@ class _DetailsBookState extends State<DetailsBook> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: () async {
                                     final currentUser =
                                         FirebaseAuth.instance.currentUser;
-                                    if (book != null && currentUser != null) {
-                                      final userId = currentUser.uid;
+
+                                    if (book == null || currentUser == null)
+                                      return;
+
+                                    final userId = currentUser.uid;
+                                    final bookId = book!.id;
+
+                                    // Simpan context dalam variabel sebelum async
+
+                                    try {
+                                      final existingRating = await ApiService()
+                                          .getRatingByUserAndBook(
+                                              userId, bookId);
 
                                       showRatingDialog(
-                                        context: context,
-                                        userId: userId,
-                                        bookId: book!.id,
-                                        onSuccess: () {
-                                          Navigator.of(context);
-                                        },
-                                      );
+                                          context: context,
+                                          userId: userId,
+                                          bookId: bookId,
+                                          initialRating:
+                                              existingRating?['rating']
+                                                      ?.toDouble() ??
+                                                  0.0,
+                                          initialReview:
+                                              existingRating?['review'] ?? '',
+                                          isEdit: existingRating != null,
+                                          ratingId:
+                                              existingRating?['id'], // Optional
+                                          onSuccess: () {
+                                            fetchBookDetail(); // refresh data buku agar averageRating terbaru ditampilkan
+                                          });
+                                    } catch (e) {
+                                      print('Error: $e');
+                                      // Tampilkan error message kalau perlu
                                     }
                                   },
                                   child: Text('Beri Rating',
