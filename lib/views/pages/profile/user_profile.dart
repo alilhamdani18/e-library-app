@@ -159,7 +159,7 @@ class _UserProfileState extends State<UserProfile> {
                           .updateUserProfile(userId: userId, profileData: data);
 
                       setState(() {
-                        user = updatedUser;
+                        updatedUser;
                       });
                       Navigator.pop(context);
                       showAwesomeLibraryDialog(context,
@@ -203,6 +203,7 @@ class _UserProfileState extends State<UserProfile> {
       final imageFile = File(pickedFile.path);
 
       try {
+        print(userId);
         final updatedUser = await ApiService().updateUserProfile(
           userId: userId,
           profileImage: imageFile,
@@ -216,7 +217,7 @@ class _UserProfileState extends State<UserProfile> {
         showAwesomeLibraryDialog(context,
             title: 'Berhasil',
             message: 'Avatar Berhasil Diperbarui',
-            dialogType: DialogType.error,
+            dialogType: DialogType.success,
             autoClose: true,
             autoCloseDelay: Duration(seconds: 2));
       } catch (e) {

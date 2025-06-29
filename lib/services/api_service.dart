@@ -253,6 +253,7 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/users/profile/$userId');
     final request = http.MultipartRequest('PUT', uri);
 
+    // Tambahkan field teks
     if (profileData != null && profileData.isNotEmpty) {
       profileData.forEach((key, value) {
         if (value != null) {
@@ -261,34 +262,41 @@ class ApiService {
       });
     }
 
+    // Tambahkan file gambar jika ada
     if (profileImage != null) {
-      final multipartFile = await http.MultipartFile.fromPath(
+      final fileStream = http.ByteStream(profileImage.openRead());
+      final length = await profileImage.length();
+
+      final multipartFile = http.MultipartFile(
         'profileImage',
-        profileImage.path,
+        fileStream,
+        length,
+        filename: profileImage.path.split('/').last,
       );
+
       request.files.add(multipartFile);
     }
 
-    try {
-      final streamedResponse = await request.send();
-      final res = await http.Response.fromStream(streamedResponse);
+    // Tambahkan header (jika pakai auth)
+    // request.headers.addAll({
+    //   'Accept': 'application/json',
+    //   'Authorization': 'Bearer YOUR_TOKEN_IF_ANY', // ganti jika perlu
+    // });
 
-      debugPrint('Status Code: ${res.statusCode}');
-      debugPrint('Response Body: ${res.body}');
+    // Kirim request
+    print('Sending request with file: ${profileImage?.path}');
+    final response = await request.send();
 
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        final userResponse = SingleUserResponse.fromJson(
-            data); // ✅ ganti 'responseJson' jadi 'data'
-        return userResponse.data;
-      } else {
-        throw Exception(
-            'Gagal update profile. Status: ${res.statusCode}, Body: ${res.body}');
-      }
-    } catch (e, stackTrace) {
-      debugPrint('Exception saat update: $e');
-      debugPrint('StackTrace: $stackTrace');
-      throw Exception('Gagal update profile: ${e.toString()}');
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+      final decoded = json.decode(responseBody);
+
+      return User.fromJson(
+          decoded['data']); // Pastikan struktur response sesuai
+    } else {
+      final errorBody = await response.stream.bytesToString();
+      throw Exception(
+          'Failed to update user profile: ${response.statusCode}, $errorBody');
     }
   }
 
