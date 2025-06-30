@@ -20,11 +20,23 @@ class _UserProfileState extends State<UserProfile> {
   User? user;
   bool isLoading = true;
 
+  bool _isUpdating = false;
+
   Future<void> getUserData() async {
     try {
+      final fbUser = fb.FirebaseAuth.instance.currentUser;
+      if (fbUser == null) {
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+      userId = fbUser.uid;
+
       final data = await ApiService().getUserProfile(userId);
       setState(() {
         user = data;
+        user!.email = fbUser.email!;
         isLoading = false;
       });
     } catch (e) {
@@ -32,30 +44,30 @@ class _UserProfileState extends State<UserProfile> {
         isLoading = false;
       });
       print('Error fetching user: $e');
+      if (mounted) {
+        showAwesomeLibraryDialog(context,
+            title: 'Gagal Memuat Profil',
+            message:
+                'Terjadi kesalahan saat memuat data profil: ${e.toString()}',
+            dialogType: DialogType.error,
+            autoClose: true,
+            autoCloseDelay: const Duration(seconds: 3));
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    final fbUser = fb.FirebaseAuth.instance.currentUser;
-    if (fbUser != null) {
-      userId = fbUser.uid;
-      getUserData();
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    getUserData();
   }
 
-  void _showEditProfileSheet() {
-    final emailController = TextEditingController(text: user?.email);
+  Future<User?> _showEditProfileSheet() async {
     final nameController = TextEditingController(text: user?.name);
     final phoneController = TextEditingController(text: user?.phone);
     final alamatController = TextEditingController(text: user?.address);
 
-    showModalBottomSheet(
+    final User? updatedUserResult = await showModalBottomSheet<User?>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -66,135 +78,170 @@ class _UserProfileState extends State<UserProfile> {
         expand: false,
         maxChildSize: 0.85,
         initialChildSize: 0.60,
-        builder: (_, scrollController) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-            left: 24,
-            right: 24,
-            top: 12,
-          ),
-          child: ListView(
-            controller: scrollController,
-            children: [
-              Center(
-                child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+        builder: (_, scrollController) => StatefulBuilder(
+          builder: (BuildContext context, StateSetter modalSetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                left: 24,
+                right: 24,
+                top: 12,
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Edit Profil',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontFamily: 'InterSemiBold',
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Nama Lengkap',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Nomor Telepon',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: alamatController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: 'Alamat',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              child: ListView(
+                controller: scrollController,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 50,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
-                  onPressed: () async {
-                    final data = {
-                      'name': nameController.text.trim(),
-                      // 'email': emailController.text.trim(),
-                      'phone': phoneController.text.trim(),
-                      'address': alamatController.text.trim(),
-                    };
-
-                    try {
-                      final updatedUser = await ApiService()
-                          .updateUserProfile(userId: userId, profileData: data);
-
-                      setState(() {
-                        updatedUser;
-                      });
-                      Navigator.pop(context);
-                      showAwesomeLibraryDialog(context,
-                          title: 'Berhasil',
-                          message: 'Profil berhasil diperbarui',
-                          dialogType: DialogType.success,
-                          autoClose: true,
-                          autoCloseDelay: Duration(seconds: 2),
-                          onOk: () {});
-                    } catch (e) {
-                      Navigator.pop(context);
-
-                      showAwesomeLibraryDialog(context,
-                          title: 'Terjadi Kesalahan',
-                          message: e.toString(),
-                          dialogType: DialogType.error,
-                          autoClose: true,
-                          autoCloseDelay: Duration(seconds: 2),
-                          onOk: () {});
-                    }
-                  },
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(fontSize: 16),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Edit Profil',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'InterSemiBold',
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Lengkap',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: phoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Nomor Telepon',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: alamatController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'Alamat',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: textColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _isUpdating
+                          ? null
+                          : () async {
+                              modalSetState(() {
+                                _isUpdating = true;
+                              });
+
+                              final data = {
+                                'name': nameController.text.trim(),
+                                'phone': phoneController.text.trim(),
+                                'address': alamatController.text.trim(),
+                              };
+
+                              try {
+                                final updatedUserFromApi = await ApiService()
+                                    .updateUserProfile(
+                                        userId: userId, profileData: data);
+
+                                final String? currentEmail = user?.email;
+                                if (currentEmail != null) {
+                                  updatedUserFromApi.email = currentEmail;
+                                }
+
+                                if (mounted) {
+                                  modalSetState(() {
+                                    _isUpdating = false;
+                                  });
+                                  showAwesomeLibraryDialog(context,
+                                      title: 'Berhasil',
+                                      message: 'Profil berhasil diperbarui',
+                                      dialogType: DialogType.success,
+                                      autoClose: true,
+                                      autoCloseDelay:
+                                          const Duration(seconds: 2), onOk: () {
+                                    Navigator.pop(context, updatedUserFromApi);
+                                  });
+                                }
+                              } catch (e) {
+                                print('Error updating profile: $e');
+                                if (mounted) {
+                                  modalSetState(() {
+                                    _isUpdating = false;
+                                  });
+                                  showAwesomeLibraryDialog(context,
+                                      title: 'Terjadi Kesalahan',
+                                      message:
+                                          'Gagal memperbarui profil: ${e.toString()}',
+                                      dialogType: DialogType.error,
+                                      autoClose: true,
+                                      autoCloseDelay:
+                                          const Duration(seconds: 2), onOk: () {
+                                    Navigator.pop(context, null);
+                                  });
+                                }
+                              }
+                            },
+                      child: _isUpdating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Simpan',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
+    return updatedUserResult;
   }
 
   Future<void> _pickAndUploadAvatar() async {
+    if (_isUpdating) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+
     final picker = ImagePicker();
     final pickedFile =
         await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
@@ -203,32 +250,50 @@ class _UserProfileState extends State<UserProfile> {
       final imageFile = File(pickedFile.path);
 
       try {
-        print(userId);
-        final updatedUser = await ApiService().updateUserProfile(
+        print('Uploading avatar for userId: $userId');
+        final updatedUserResponse = await ApiService().updateUserProfile(
           userId: userId,
           profileImage: imageFile,
         );
 
-        setState(() {
-          user = updatedUser;
-        });
-        print(user);
+        if (mounted) {
+          setState(() {
+            final String? currentEmail = user?.email;
+            user = updatedUserResponse;
+            if (currentEmail != null) {
+              user!.email = currentEmail;
+            }
+            _isUpdating = false;
+          });
+        }
+        print('Updated user data after avatar upload: $user');
 
-        showAwesomeLibraryDialog(context,
-            title: 'Berhasil',
-            message: 'Avatar Berhasil Diperbarui',
-            dialogType: DialogType.success,
-            autoClose: true,
-            autoCloseDelay: Duration(seconds: 2));
+        if (mounted) {
+          showAwesomeLibraryDialog(context,
+              title: 'Berhasil',
+              message: 'Avatar Berhasil Diperbarui',
+              dialogType: DialogType.success,
+              autoClose: true,
+              autoCloseDelay: const Duration(seconds: 2));
+        }
       } catch (e) {
-        print(e);
-        showAwesomeLibraryDialog(context,
-            title: 'Terjadi Kesalahan',
-            message: e.toString(),
-            dialogType: DialogType.error,
-            autoClose: true,
-            autoCloseDelay: Duration(seconds: 2));
+        print('Error uploading avatar: $e');
+        if (mounted) {
+          setState(() {
+            _isUpdating = false;
+          });
+          showAwesomeLibraryDialog(context,
+              title: 'Terjadi Kesalahan',
+              message: 'Gagal memperbarui avatar: ${e.toString()}',
+              dialogType: DialogType.error,
+              autoClose: true,
+              autoCloseDelay: const Duration(seconds: 2));
+        }
       }
+    } else {
+      setState(() {
+        _isUpdating = false;
+      });
     }
   }
 
@@ -248,8 +313,15 @@ class _UserProfileState extends State<UserProfile> {
         ),
         actions: [
           PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'edit') _showEditProfileSheet();
+            onSelected: (value) async {
+              if (value == 'edit') {
+                final User? updatedUser = await _showEditProfileSheet();
+                if (updatedUser != null) {
+                  setState(() {
+                    user = updatedUser;
+                  });
+                }
+              }
             },
             itemBuilder: (context) => [
               const PopupMenuItem<String>(
@@ -266,7 +338,9 @@ class _UserProfileState extends State<UserProfile> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : user == null
-              ? const Center(child: Text('Gagal memuat data user'))
+              ? const Center(
+                  child:
+                      Text('Gagal memuat data user atau user tidak ditemukan.'))
               : SingleChildScrollView(
                   child: Column(
                     children: [
@@ -283,26 +357,38 @@ class _UserProfileState extends State<UserProfile> {
                         child: Column(
                           children: [
                             const SizedBox(height: 50),
-                            Container(
-                              width: 130,
-                              height: 130,
-                              decoration: BoxDecoration(
-                                color: greyBtnColor,
-                                shape: BoxShape.circle,
-                                image: user!.profileImageUrl != null
-                                    ? DecorationImage(
-                                        image: NetworkImage(
-                                            user!.profileImageUrl!),
-                                        fit: BoxFit.cover)
-                                    : const DecorationImage(
-                                        image: AssetImage(
-                                            'assets/images/google-icon.png'),
-                                        fit: BoxFit.cover),
-                              ),
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 130,
+                                  height: 130,
+                                  decoration: BoxDecoration(
+                                    color: greyBtnColor,
+                                    shape: BoxShape.circle,
+                                    image: user!.profileImageUrl != null &&
+                                            user!.profileImageUrl!.isNotEmpty
+                                        ? DecorationImage(
+                                            image: NetworkImage(
+                                                user!.profileImageUrl!),
+                                            fit: BoxFit.cover)
+                                        : const DecorationImage(
+                                            image: AssetImage(
+                                                'assets/images/placeholder_avatar.png'),
+                                            fit: BoxFit.cover),
+                                  ),
+                                ),
+                                if (_isUpdating)
+                                  const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                              ],
                             ),
                             const SizedBox(height: 20),
                             ElevatedButton(
-                              onPressed: _pickAndUploadAvatar,
+                              onPressed:
+                                  _isUpdating ? null : _pickAndUploadAvatar,
                               child: const Text('Ganti Avatar'),
                             ),
                           ],

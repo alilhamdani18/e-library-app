@@ -13,7 +13,10 @@ class BookCard extends StatefulWidget {
   final String author;
   final String year;
   final String averageRating;
-  final String description;
+  final num? availableStock;
+  // final String description;
+  final double? imageWidth;
+  final double? imageHeight;
 
   const BookCard({
     super.key,
@@ -23,7 +26,10 @@ class BookCard extends StatefulWidget {
     required this.author,
     required this.year,
     required this.averageRating,
-    required this.description,
+    required this.availableStock,
+    // required this.description,
+    this.imageWidth,
+    this.imageHeight,
   });
 
   @override
@@ -65,8 +71,8 @@ class _BookCardState extends State<BookCard> {
                 borderRadius: BorderRadius.circular(10),
                 child: Image.network(
                   widget.image,
-                  width: 110,
-                  height: 150,
+                  width: widget.imageWidth ?? 100,
+                  height: widget.imageHeight ?? 130,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) =>
                       Icon(Icons.broken_image),
@@ -86,7 +92,6 @@ class _BookCardState extends State<BookCard> {
                               fontFamily: 'InterBold',
                               fontSize: 18,
                             )),
-                        
                       ],
                     ),
                     Text(widget.author,
@@ -117,17 +122,35 @@ class _BookCardState extends State<BookCard> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      widget.description,
-                      style: TextStyle(
-                        color: textGreyColor,
-                        fontFamily: 'InterMedium',
-                        fontSize: 14,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: (widget.availableStock ?? 0) ==
+                                0 // Check if availableStock is 0 (or null, then 0)
+                            ? const Color.fromARGB(255, 255, 199, 195)
+                            : const Color.fromARGB(
+                                255, 194, 255, 196), // Original green if not 0
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      child: Text(
+                        'Tersedia : ${(widget.availableStock ?? 0).toString()}', // Ensure it's always a string
+                        style: TextStyle(
+                            color:
+                                primaryColor), // Consider changing text color for red background if needed
+                      ),
+                    )
+                    // Text(
+                    //   widget.description,
+                    //   style: TextStyle(
+                    //     color: textGreyColor,
+                    //     fontFamily: 'InterMedium',
+                    //     fontSize: 14,
+                    //   ),
+                    //   softWrap: true,
+                    //   overflow: TextOverflow.ellipsis,
+                    //   maxLines: 2,
+                    // ),
                   ],
                 ),
               ),

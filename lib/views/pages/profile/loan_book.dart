@@ -112,8 +112,8 @@ class _LoanBookState extends State<LoanBook> {
                                                     ?['averageRating']
                                                 ?.toString() ??
                                             '0.0',
-                                        description:
-                                            e['book']?['description'] ?? '',
+                                        availableStock:
+                                            e['book']?['availableStock'] ?? '',
                                       ))
                                   .toList(),
                             ),
@@ -133,8 +133,8 @@ class _LoanBookState extends State<LoanBook> {
                                                     ?['averageRating']
                                                 ?.toString() ??
                                             '0.0',
-                                        description:
-                                            e['book']?['description'] ?? '',
+                                        availableStock:
+                                            e['book']?['availableStock'] ?? '',
                                       ))
                                   .toList(),
                             ),

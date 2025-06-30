@@ -38,14 +38,14 @@ class CategoryBooksPage extends StatelessWidget {
         backgroundColor: primaryColor,
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: books.isEmpty
             ? const Center(child: Text('Tidak ada buku dalam kategori ini.'))
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Buku $category',
+                    'Kategori $category',
                     style: TextStyle(
                       fontSize: 24,
                       color: primaryColor,
@@ -54,7 +54,7 @@ class CategoryBooksPage extends StatelessWidget {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    'Daftar Buku $category pada Perpustakaan Himpelmanawaka',
+                    'Daftar Buku kategori $category pada Perpustakaan Himpelmanawaka',
                     style: TextStyle(
                       fontSize: 16,
                       color: primaryColor,
@@ -81,8 +81,7 @@ class CategoryBooksPage extends StatelessWidget {
                             year: book.createdAt?.year.toString() ?? '',
                             averageRating:
                                 book.averageRating?.toString() ?? '0.0',
-                            description:
-                                book.description ?? 'Penulis tidak diketahui',
+                            availableStock: book.availableStock,
                           ),
                         );
                       },

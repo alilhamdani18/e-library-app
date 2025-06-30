@@ -1,12 +1,14 @@
-// import 'package:e_library/models/list_book.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:e_library/views/main_screen.dart';
 import 'package:e_library/components/book_card.dart';
 import 'package:e_library/components/book_card_slide.dart';
+import 'package:e_library/views/pages/library/category_page.dart';
 import 'package:flutter/material.dart';
-import 'package:e_library/models/category_book.dart';
 import 'package:e_library/components/book_category.dart';
 import 'package:e_library/services/api_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_library/models/book.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -17,32 +19,121 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final ApiService _apiService = ApiService();
-  List<dynamic> booksFromApi = [];
+  List<Book> booksFromApi = [];
+  List<String> displayedCategories = [];
   bool isLoadingBooks = false;
   String errorMessage = '';
+
+  User? _currentUser;
+  Map<String, dynamic>? _userData;
+
+  final List<String> primaryCategories = [
+    'Novel',
+    'Pendidikan',
+    'Manga',
+    'Motivation',
+    'Fiksi',
+  ];
+
+  final Map<String, IconData> categoryIconsMap = {
+    'Novel': Icons.auto_stories,
+    'Pendidikan': Icons.science,
+    'Manga': Icons.history_edu,
+    'Motivation': Icons.computer,
+    'Fiksi': Icons.business_center,
+    'Lainnya': Icons.more_horiz,
+  };
+
+  final Map<String, Color> categoryColorsMap = {
+    'Novel': Colors.blue,
+    'Pendidikan': Colors.green,
+    'Manga': Colors.orange,
+    'Motivation': Colors.purple,
+    'Fiksi': Colors.red,
+    'Lainnya': Colors.grey,
+  };
 
   @override
   void initState() {
     super.initState();
-    loadBooksFromApi();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _fetchUserData();
+    loadBooksAndProcessCategories();
   }
 
-  Future<void> loadBooksFromApi() async {
+  Future<void> _fetchUserData() async {
+    if (_currentUser != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .get();
+        if (doc.exists) {
+          setState(() {
+            _userData = doc.data();
+          });
+        } else {
+          setState(() {
+            _userData = null;
+          });
+        }
+      } catch (e) {
+        print('Error fetching user data: $e');
+      }
+    } else {
+      setState(() {
+        _userData = null;
+      });
+    }
+  }
+
+  Future<void> loadBooksAndProcessCategories() async {
     setState(() {
       isLoadingBooks = true;
       errorMessage = '';
+      displayedCategories = [];
     });
 
     try {
-      final response = await _apiService.getBooks();
+      final List<Book> responseBooks = await _apiService.getBooks();
+
+      Set<String> allUniqueBookCategoriesLower = {};
+      for (var book in responseBooks) {
+        if (book.category != null && book.category!.isNotEmpty) {
+          allUniqueBookCategoriesLower.add(book.category!.toLowerCase());
+        }
+      }
+
+      List<String> tempDisplayedCategories = [];
+      Set<String> primaryCategoriesLowerSet =
+          primaryCategories.map((e) => e.toLowerCase()).toSet();
+      bool hasOtherCategory = false;
+
+      for (String pCat in primaryCategories) {
+        if (allUniqueBookCategoriesLower.contains(pCat.toLowerCase())) {
+          tempDisplayedCategories.add(pCat);
+        }
+      }
+
+      for (String bookCatLower in allUniqueBookCategoriesLower) {
+        if (!primaryCategoriesLowerSet.contains(bookCatLower)) {
+          hasOtherCategory = true;
+          break;
+        }
+      }
+
+      if (hasOtherCategory) {
+        tempDisplayedCategories.add('Lainnya');
+      }
 
       setState(() {
-        booksFromApi = response;
+        booksFromApi = responseBooks;
+        displayedCategories = tempDisplayedCategories;
         isLoadingBooks = false;
       });
     } catch (e) {
       setState(() {
-        errorMessage = 'Gagal memuat buku: $e';
+        errorMessage = 'Gagal memuat data: $e';
         isLoadingBooks = false;
       });
 
@@ -57,24 +148,29 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Future<void> refreshBooks() async {
-    await loadBooksFromApi();
+  Future<void> refreshAllData() async {
+    await _fetchUserData();
+    await loadBooksAndProcessCategories();
   }
 
   @override
   Widget build(BuildContext context) {
+    final String userName = _userData?['name'] ?? 'Pengguna';
+    final String userEmail = _currentUser?.email ?? 'user@example.com';
+    final String profileImageUrl = _userData?['profileImageUrl'] ?? '';
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: RefreshIndicator(
-        onRefresh: refreshBooks,
+        onRefresh: refreshAllData,
         child: SingleChildScrollView(
           child: Column(
             children: [
               Container(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -87,24 +183,22 @@ class _HomeState extends State<Home> {
                               fontSize: 24),
                         ),
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
+                          onPressed: () async {
+                            await Navigator.of(context).push(MaterialPageRoute(
                                 builder: (_) =>
                                     const MainScreen(initialIndex: 2)));
+                            _fetchUserData();
                           },
-                          child: CircleAvatar(
-                            backgroundColor: primaryColor,
-                            child:
-                                Text('A', style: TextStyle(color: textColor)),
-                          ),
+                          child:
+                              _buildProfileAvatar(profileImageUrl, userEmail),
                         )
                       ],
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     Row(
                       children: [
                         Text(
-                          'Selamat Datang',
+                          'Selamat Datang, $userName',
                           style: TextStyle(
                               color: primaryColor,
                               fontFamily: 'InterBold',
@@ -124,9 +218,9 @@ class _HomeState extends State<Home> {
                         )
                       ],
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Container(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [primaryColor, primaryGradientColor],
@@ -141,14 +235,14 @@ class _HomeState extends State<Home> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Beragam Koleksi Buku Ada Dalam Genggamanmu',
                                   style: TextStyle(
                                       color: Colors.amber,
                                       fontFamily: 'InterBold',
                                       fontSize: 20),
                                 ),
-                                SizedBox(height: 8),
+                                const SizedBox(height: 8),
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.of(context).push(
@@ -170,7 +264,7 @@ class _HomeState extends State<Home> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Text(
@@ -182,20 +276,9 @@ class _HomeState extends State<Home> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: categoryData
-                            .map((e) => BookCategory(
-                                  icon: e['icon'] as IconData,
-                                  color: e['color'] as Color,
-                                  label: e['label'] as String,
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 10),
+                    _buildCategorySection(),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Text(
@@ -207,9 +290,9 @@ class _HomeState extends State<Home> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     _buildRecommendedSection(),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -220,38 +303,19 @@ class _HomeState extends State<Home> {
                               fontFamily: 'InterBold',
                               fontSize: 18),
                         ),
-                        Row(
-                          children: [
-                            // if (isLoadingBooks)
-                            //   Container(
-                            //     margin: EdgeInsets.only(right: 8),
-                            //     child: SizedBox(
-                            //       width: 16,
-                            //       height: 16,
-                            //       child: CircularProgressIndicator(
-                            //         strokeWidth: 2,
-                            //         valueColor: AlwaysStoppedAnimation<Color>(
-                            //             primaryColor),
-                            //       ),
-                            //     ),
-                            //   ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) =>
-                                        const MainScreen(initialIndex: 1)));
-                              },
-                              child: Text(
-                                'Lihat Semua',
-                                style: TextStyle(
-                                    fontSize: 16, color: primaryColor),
-                              ),
-                            )
-                          ],
-                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) =>
+                                    const MainScreen(initialIndex: 1)));
+                          },
+                          child: Text(
+                            'Lihat Semua',
+                            style: TextStyle(fontSize: 16, color: primaryColor),
+                          ),
+                        )
                       ],
                     ),
-                    // SizedBox(height: 5),
                     _buildBooksFromApiSection(),
                   ],
                 ),
@@ -259,6 +323,77 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategorySection() {
+    if (isLoadingBooks) {
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+        ),
+      );
+    }
+
+    if (errorMessage.isNotEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (displayedCategories.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Text(
+          'Tidak ada kategori tersedia.',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: displayedCategories.map((categoryName) {
+          IconData icon = categoryIconsMap[categoryName] ?? Icons.category;
+          Color color = categoryColorsMap[categoryName] ?? Colors.deepOrange;
+
+          return BookCategory(
+            icon: icon,
+            color: color,
+            label: categoryName,
+            onTap: () {
+              List<Book> filteredBooks;
+              if (categoryName.toLowerCase() == 'lainnya') {
+                final primaryCategoriesLower =
+                    primaryCategories.map((e) => e.toLowerCase()).toSet();
+                filteredBooks = booksFromApi
+                    .where((book) =>
+                        book.category != null &&
+                        book.category!.isNotEmpty &&
+                        !primaryCategoriesLower
+                            .contains(book.category!.toLowerCase()))
+                    .toList();
+              } else {
+                filteredBooks = booksFromApi
+                    .where((book) =>
+                        book.category != null &&
+                        book.category!.toLowerCase() ==
+                            categoryName.toLowerCase())
+                    .toList();
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CategoryBooksPage(
+                    category: categoryName,
+                    books: filteredBooks,
+                  ),
+                ),
+              );
+            },
+          );
+        }).toList(),
       ),
     );
   }
@@ -273,10 +408,13 @@ class _HomeState extends State<Home> {
     }
 
     if (booksFromApi.isEmpty || errorMessage.isNotEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
-    final recommendedBooks = booksFromApi.take(5).toList();
+    List<Book> sortedBooks = List.from(booksFromApi);
+    sortedBooks.sort(
+        (a, b) => (b.averageRating ?? 0.0).compareTo(a.averageRating ?? 0.0));
+    final recommendedBooks = sortedBooks.take(5).toList();
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -298,7 +436,7 @@ class _HomeState extends State<Home> {
   Widget _buildBooksFromApiSection() {
     if (isLoadingBooks) {
       return Container(
-        padding: EdgeInsets.all(0),
+        padding: const EdgeInsets.all(0),
         height: 200,
         child: Center(
           child: Column(
@@ -307,7 +445,6 @@ class _HomeState extends State<Home> {
               CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
               ),
-              // SizedBox(height: 16),
               Text(
                 'Memuat buku...',
                 style:
@@ -321,24 +458,24 @@ class _HomeState extends State<Home> {
 
     if (errorMessage.isNotEmpty) {
       return Padding(
-        padding: EdgeInsets.all(0),
+        padding: const EdgeInsets.all(0),
         child: Column(
           children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 48),
-            SizedBox(height: 8),
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 8),
             Text('Gagal memuat buku',
                 style: TextStyle(
                     color: Colors.red, fontFamily: 'InterBold', fontSize: 16)),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               errorMessage,
               style: TextStyle(
                   color: Colors.grey, fontFamily: 'InterMedium', fontSize: 14),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: loadBooksFromApi,
+              onPressed: loadBooksAndProcessCategories,
               style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
               child: Text('Coba Lagi', style: TextStyle(color: textColor)),
             ),
@@ -347,16 +484,20 @@ class _HomeState extends State<Home> {
       );
     }
 
-    final otherBooks = booksFromApi.skip(5).toList();
+    List<Book> sortedBooks = List.from(booksFromApi);
+    sortedBooks.sort(
+        (a, b) => (b.averageRating ?? 0.0).compareTo(a.averageRating ?? 0.0));
+
+    final otherBooks = sortedBooks.skip(5).take(5).toList();
 
     if (otherBooks.isEmpty) {
       return Padding(
-        padding: EdgeInsets.all(0),
+        padding: const EdgeInsets.all(0),
         child: Column(
           children: [
-            Icon(Icons.book_outlined, color: Colors.grey, size: 48),
-            SizedBox(height: 8),
-            Text('Belum ada buku tersedia',
+            const Icon(Icons.book_outlined, color: Colors.grey, size: 48),
+            const SizedBox(height: 8),
+            Text('Belum ada buku tersedia di kategori ini',
                 style: TextStyle(
                     color: Colors.grey,
                     fontFamily: 'InterMedium',
@@ -369,7 +510,7 @@ class _HomeState extends State<Home> {
     return ListView.builder(
       padding: const EdgeInsets.all(0),
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: otherBooks.length,
       itemBuilder: (context, index) {
         final book = otherBooks[index];
@@ -381,9 +522,32 @@ class _HomeState extends State<Home> {
               book.author.isNotEmpty ? book.author : 'Penulis tidak diketahui',
           year: book.createdAt?.year.toString() ?? '',
           averageRating: book.averageRating?.toString() ?? '0.0',
-          description: book.description ?? '',
+          availableStock: book.availableStock,
         );
       },
     );
+  }
+
+  Widget _buildProfileAvatar(String? imageUrl, String email) {
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return CircleAvatar(
+        backgroundColor: primaryColor,
+        backgroundImage: NetworkImage(imageUrl),
+        radius: 20,
+      );
+    } else {
+      String initial = '';
+      if (email.isNotEmpty) {
+        initial = email.substring(0, 1).toUpperCase();
+      }
+      return CircleAvatar(
+        backgroundColor: primaryColor,
+        radius: 20,
+        child: Text(
+          initial,
+          style: TextStyle(color: textColor),
+        ),
+      );
+    }
   }
 }

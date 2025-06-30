@@ -5,6 +5,8 @@ class BookCard extends StatelessWidget {
   final String penulis;
   final String gambar; // path asset atau URL
   final bool fromNetwork;
+  final double? imageWidth; // <-- Tambahkan properti width
+  final double? imageHeight;
 
   const BookCard({
     super.key,
@@ -12,6 +14,8 @@ class BookCard extends StatelessWidget {
     required this.penulis,
     required this.gambar,
     this.fromNetwork = false,
+    this.imageWidth,
+    this.imageHeight,
   });
 
   @override
@@ -29,8 +33,8 @@ class BookCard extends StatelessWidget {
             child: fromNetwork
                 ? Image.network(
                     gambar,
-                    width: 60,
-                    height: 80,
+                    width: imageWidth ?? 60,
+                    height: imageHeight ?? 80,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         const Icon(Icons.broken_image, size: 60),

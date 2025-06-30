@@ -35,11 +35,10 @@ void showAwesomeLibraryDialog(
   if (autoClose) {
     Future.delayed(autoCloseDelay, () {
       // ignore: use_build_context_synchronously
-      if (Navigator.of(context, rootNavigator: true).canPop()) {
-        // ignore: use_build_context_synchronously
-        Navigator.of(context, rootNavigator: true).pop(); // Tutup dialog
-        onOk?.call(); // Jalankan callback OK
-      }
+      dialog.dismiss();
+      onOk?.call();
+      // if (dialog.is) {
+      // }
     });
   }
 }

@@ -4,6 +4,7 @@ class Book {
   final String title;
   final String author;
   final String? year;
+  final num? availableStock;
   final String? description;
   final String? coverUrl;
   final double? averageRating;
@@ -17,6 +18,7 @@ class Book {
     required this.title,
     required this.author,
     this.year,
+    this.availableStock,
     this.description,
     this.coverUrl,
     this.averageRating,
@@ -33,6 +35,7 @@ class Book {
       author: json['author']?.toString() ?? '',
       year: json['year']?.toString(),
       description: json['description']?.toString(),
+      availableStock: json['availableStock'],
       coverUrl: json['coverUrl']?.toString(),
       averageRating: _parseDouble(json['averageRating']),
       pages: json['pages'] is int
@@ -54,6 +57,7 @@ class Book {
       'title': title,
       'author': author,
       'year': year,
+      'availableStock': availableStock,
       'description': description,
       'coverUrl': coverUrl,
       'averageRating': averageRating,

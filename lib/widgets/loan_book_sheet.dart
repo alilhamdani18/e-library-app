@@ -5,14 +5,13 @@ import 'package:e_library/models/book.dart';
 import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:e_library/utils/dialog.dart';
-// import 'package:e_library/views/pages/library/detail_book.dart';
-// import 'package:e_library/views/pages/library/detail_book.dart';
 import 'package:flutter/material.dart';
 
 class BottomSheetLoanBook extends StatefulWidget {
   final String bookId;
   final String userId;
   final Book? book;
+
   const BottomSheetLoanBook(
       {super.key,
       required this.bookId,
@@ -186,16 +185,24 @@ class _BottomSheetLoanBookState extends State<BottomSheetLoanBook> {
                       SizedBox(
                         height: 10,
                       ),
-                      Text(
-                        widget.book?.description ?? '',
-                        style: TextStyle(
-                          color: textGreyColor,
-                          fontFamily: 'InterMedium',
-                          fontSize: 14,
+                      Container(
+                        decoration: BoxDecoration(
+                          color: (widget.book?.availableStock ?? 0) == 0
+                              ? const Color.fromARGB(255, 255, 199, 195)
+                              : const Color.fromARGB(255, 206, 255,
+                                  207), // Original green if not 0
+                          borderRadius: BorderRadius.circular(25),
                         ),
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                        padding: const EdgeInsets.symmetric(
+                            // Added const
+                            horizontal: 10,
+                            vertical: 5),
+                        child: Text(
+                          'Tersedia : ${(widget.book?.availableStock ?? 0).toString()}', // Corrected: Access from book! and added .toString()
+                          style: TextStyle(
+                              color:
+                                  primaryColor), // Consider changing text color for red background if needed
+                        ),
                       ),
                       // Row(
                       //   children: [

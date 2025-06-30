@@ -21,7 +21,6 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   int myIndex = 2;
-
   String? userId;
   Map<String, dynamic>? userData;
   bool isLoading = true;
@@ -33,10 +32,17 @@ class _ProfileState extends State<Profile> {
     userId = currentUser?.uid;
     if (userId != null) {
       fetchUserData(userId!);
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   Future<void> fetchUserData(String uid) async {
+    setState(() {
+      isLoading = true;
+    });
     try {
       final doc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
@@ -46,7 +52,6 @@ class _ProfileState extends State<Profile> {
           isLoading = false;
         });
       } else {
-        // Data tidak ditemukan
         setState(() {
           userData = null;
           isLoading = false;
@@ -61,7 +66,6 @@ class _ProfileState extends State<Profile> {
   }
 
   void _handleLogout(BuildContext context) {
-    // Langkah 1: Konfirmasi logout
     showAwesomeLibraryDialog(
       context,
       title: 'Konfirmasi Logout',
@@ -75,7 +79,6 @@ class _ProfileState extends State<Profile> {
 
         if (!context.mounted) return;
 
-        // Langkah 2: Notifikasi berhasil logout
         showAwesomeLibraryDialog(
           context,
           title: 'Logout Berhasil',
@@ -98,7 +101,7 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(
+        title: const Text(
           'Profile',
           style: TextStyle(
             color: Colors.white,
@@ -114,151 +117,169 @@ class _ProfileState extends State<Profile> {
         width: double.infinity,
         height: double.infinity,
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30),
-                    ),
-                  ),
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
                   child: Column(
                     children: [
-                      const SizedBox(height: 50),
                       Container(
-                        width: 130,
-                        height: 130,
+                        padding: const EdgeInsets.all(16),
+                        width: double.infinity,
                         decoration: BoxDecoration(
-                          color: greyBtnColor,
-                          shape: BoxShape.circle,
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/google-icon.png'),
-                            fit: BoxFit.fill,
+                          color: primaryColor,
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(30),
+                            bottomRight: Radius.circular(30),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        userData?['name'] ?? 'Pengguna',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'InterSemiBold',
-                          fontSize: 20,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: greyBtnColor,
-                        ),
-                        child: Text(
-                          userData?['email'] ?? 'Pengguna',
-                          style: const TextStyle(
-                            color: Colors.blueGrey,
-                            fontFamily: 'InterSemiBold',
-                            fontSize: 14,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  width: double.infinity,
-                  child: Column(
-                    children: [
-                      ProfileMenuItem(
-                        icon: Icons.person,
-                        title: 'Data Pengguna',
-                        onTap: () {
-                          if (userId != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => UserProfile(),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 50),
+                            Container(
+                              width: 130,
+                              height: 130,
+                              decoration: BoxDecoration(
+                                color: greyBtnColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                ),
+                                image: (userData?['profileImageUrl'] != null &&
+                                        userData!['profileImageUrl'].isNotEmpty)
+                                    ? DecorationImage(
+                                        image: NetworkImage(
+                                            userData!['profileImageUrl']),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const DecorationImage(
+                                        image: AssetImage(
+                                            'assets/images/google-icon.png'),
+                                        fit: BoxFit.fill,
+                                      ),
                               ),
-                            );
-                          }
-                        },
-                        childColor: const Color.fromARGB(255, 4, 114, 31),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              userData?['name'] ?? 'Pengguna',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'InterSemiBold',
+                                fontSize: 20,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: greyBtnColor,
+                              ),
+                              child: Text(
+                                FirebaseAuth.instance.currentUser?.email ??
+                                    'Tidak Tersedia',
+                                style: const TextStyle(
+                                  color: Colors.blueGrey,
+                                  fontFamily: 'InterSemiBold',
+                                  fontSize: 14,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      ProfileMenuItem(
-                        icon: Icons.bookmark_added,
-                        title: 'Buku Tersimpan',
-                        onTap: () {
-                          final user = FirebaseAuth.instance.currentUser;
-                          final userId = user?.uid;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SavedBook(
-                                      userId: userId!,
-                                    )),
-                          );
-                        },
-                        childColor: const Color.fromARGB(255, 4, 114, 31),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        width: double.infinity,
+                        child: Column(
+                          children: [
+                            ProfileMenuItem(
+                              icon: Icons.person,
+                              title: 'Data Pengguna',
+                              onTap: () async {
+                                if (userId != null) {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => UserProfile(),
+                                    ),
+                                  );
+                                  fetchUserData(userId!);
+                                }
+                              },
+                              childColor: const Color.fromARGB(255, 4, 114, 31),
+                            ),
+                            const SizedBox(height: 10),
+                            ProfileMenuItem(
+                              icon: Icons.bookmark_added,
+                              title: 'Buku Tersimpan',
+                              onTap: () {
+                                final user = FirebaseAuth.instance.currentUser;
+                                final userId = user?.uid;
+                                if (userId != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SavedBook(
+                                        userId: userId,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              childColor: const Color.fromARGB(255, 4, 114, 31),
+                            ),
+                            const SizedBox(height: 10),
+                            ProfileMenuItem(
+                              icon: Icons.menu_book_outlined,
+                              title: 'Buku Dipinjam',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const LoanBook()),
+                                );
+                              },
+                              childColor: const Color.fromARGB(255, 4, 114, 31),
+                            ),
+                            const SizedBox(height: 10),
+                            ProfileMenuItem(
+                              icon: Icons.error_outlined,
+                              title: 'Tentang Aplikasi',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const AboutApp()),
+                                );
+                              },
+                              childColor: const Color.fromARGB(255, 4, 114, 31),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      ProfileMenuItem(
-                        icon: Icons.menu_book_outlined,
-                        title: 'Buku Dipinjam',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoanBook()),
-                          );
-                        },
-                        childColor: const Color.fromARGB(255, 4, 114, 31),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: TextButton(
+                          onPressed: () => _handleLogout(context),
+                          child: const Text(
+                            'Logout',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'InterBold',
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      ProfileMenuItem(
-                        icon: Icons.error_outlined,
-                        title: 'Tentang Aplikasi',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const AboutApp()),
-                          );
-                        },
-                        childColor: const Color.fromARGB(255, 4, 114, 31),
-                      ),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: TextButton(
-                    onPressed: () => _handleLogout(context),
-                    child: const Text(
-                      'Logout',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'InterBold',
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
         ),
       ),
     );

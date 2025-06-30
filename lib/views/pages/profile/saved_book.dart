@@ -67,7 +67,7 @@ class _SavedBookState extends State<SavedBook> {
                   author: book['author'],
                   year: book['year'].toString(),
                   averageRating: book['averageRating'].toString(),
-                  description: book['description'],
+                  availableStock: book['availableStock'],
                 );
               }).toList(),
             );

@@ -1,13 +1,13 @@
 class User {
   final String? username;
   final String uid; // Menggunakan uid sebagai ID utama, bukan hanya 'id'
-  final String email;
+  String email;
   final String? name;
   final String? phone;
   final String? address;
-  final String? profileImageUrl;
+  String? profileImageUrl;
   final DateTime? createdAt;
-  final DateTime? updatedAt; // Pastikan ini juga final
+  DateTime? updatedAt; // Pastikan ini juga final
 
   User({
     this.username,

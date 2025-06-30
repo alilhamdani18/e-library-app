@@ -1,10 +1,10 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/utils/dialog.dart';
+import 'package:e_library/utils/dialog.dart'; 
 import 'package:e_library/views/main_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:e_library/views/register.dart';
-import 'package:e_library/services/auth_service.dart';
+import 'package:e_library/views/register.dart'; 
+import 'package:e_library/services/auth_service.dart'; 
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,6 +15,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   bool isHide = true;
+  bool _isLoading = false; 
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -38,12 +39,20 @@ class _LoginState extends State<Login> {
       return;
     }
 
+    setState(() {
+      _isLoading = true; 
+    });
+
     final result = await AuthService().signInWithEmail(email, password);
 
-    if (!mounted) return;
+    if (!mounted)
+      return; 
+
+    setState(() {
+      _isLoading = false; 
+    });
 
     if (result == null) {
-      // Tampilkan dialog berhasil login
       showAwesomeLibraryDialog(
         context,
         title: 'Login Berhasil!',
@@ -51,18 +60,28 @@ class _LoginState extends State<Login> {
         dialogType: DialogType.success,
         autoClose: true,
         onOk: () {
-          Navigator.of(context).pushReplacement(
+        
+          Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (_) => const MainScreen(initialIndex: 0),
             ),
+            (Route<dynamic> route) =>
+                false, 
           );
         },
       );
     } else {
       // Gagal login
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result)),
+      showAwesomeLibraryDialog(
+        context,
+        title: 'Login Gagal',
+        message: result, 
+        dialogType: DialogType.error,
+        autoClose: true,
+        onOk: () {
+        },
       );
+    
     }
   }
 
@@ -78,6 +97,13 @@ class _LoginState extends State<Login> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: InkWell(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        splashFactory: NoSplash
+            .splashFactory, 
+        highlightColor:
+            Colors.transparent, 
         child: Column(
           children: [
             Expanded(
@@ -129,8 +155,8 @@ class _LoginState extends State<Login> {
                             contentPadding: const EdgeInsets.all(8),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(width: 0, style: BorderStyle.none),
+                              borderSide: const BorderSide(
+                                  width: 0, style: BorderStyle.none),
                             ),
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -168,8 +194,9 @@ class _LoginState extends State<Login> {
                         decoration: InputDecoration(
                             suffixIcon: IconButton(
                                 onPressed: () {
-                                  isHide = !isHide;
-                                  setState(() {});
+                                  setState(() {
+                                    isHide = !isHide;
+                                  });
                                 },
                                 icon: Icon(
                                   isHide
@@ -180,8 +207,8 @@ class _LoginState extends State<Login> {
                             contentPadding: const EdgeInsets.all(8),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(width: 0, style: BorderStyle.none),
+                              borderSide: const BorderSide(
+                                  width: 0, style: BorderStyle.none),
                             ),
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -199,18 +226,30 @@ class _LoginState extends State<Login> {
                       padding: const EdgeInsets.only(bottom: 6),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          minimumSize: Size(double.infinity, 50),
+                          minimumSize: const Size(double.infinity, 50),
                           backgroundColor: primaryColor,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        onPressed: _handleLogin,
-                        child: Text('Masuk',
-                            style: TextStyle(
-                                color: textColor,
-                                fontSize: 16,
-                                fontFamily: 'InterSemiBold')),
+                        onPressed: _isLoading
+                            ? null
+                            : _handleLogin, 
+                        child: _isLoading
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(textColor),
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text('Masuk',
+                                style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 16,
+                                    fontFamily: 'InterSemiBold')),
                       ),
                     ),
                   ],
@@ -232,9 +271,12 @@ class _LoginState extends State<Login> {
                   Center(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                const Register()));
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  const Register()),
+                          (Route<dynamic> route) => false,
+                        );
                       },
                       child: Text(
                         'Daftar Sekarang',
