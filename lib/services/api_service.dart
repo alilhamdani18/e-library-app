@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:e_library/models/book.dart';
+import 'package:e_library/models/notification.dart';
 import 'package:e_library/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -328,12 +329,20 @@ class ApiService {
   Future<List<dynamic>> getUserCurrentLoans(String userId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/current-loans/$userId'),
+        Uri.parse('$baseUrl/loans/user/$userId'),
         headers: _headers,
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> decoded = jsonDecode(response.body);
+        final data = decoded['data']; // Asumsi response juga ada key 'data'
+
+        if (data is List) {
+          return data;
+        } else {
+          throw Exception(
+              'Unexpected response format: data is not a List in current loans');
+        }
       } else {
         throw Exception('Failed to get current loans: ${response.statusCode}');
       }
@@ -397,4 +406,80 @@ class ApiService {
       throw Exception('Error searching books: $e');
     }
   }
+
+  // Mengambil notifikasi pengguna dari koleksi NOTIFICATIONS
+  Future<List<AppNotification>> getUserNotifications(String userId) async {
+    try {
+      final uri = Uri.parse('$baseUrl/notifications/user/$userId');
+      final response = await http.get(uri, headers: _headers);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        if (responseData['success'] == true && responseData['data'] is List) {
+          return (responseData['data'] as List)
+              .map((json) => AppNotification.fromJson(json))
+              .toList();
+        } else {
+          throw Exception('Format respons notifikasi tidak valid.');
+        }
+      } else {
+        final Map<String, dynamic> errorData = json.decode(response.body);
+        throw Exception(
+            'Gagal memuat notifikasi: ${response.statusCode} - ${errorData['error'] ?? 'Unknown Error'}');
+      }
+    } catch (e) {
+      print('Error fetching user notifications: $e');
+      rethrow;
+    }
+  }
+
+  // Menandai notifikasi sebagai terbaca di koleksi NOTIFICATIONS
+  Future<void> markNotificationAsRead(String notificationId) async {
+    try {
+      final uri =
+          Uri.parse('$baseUrl/notifications/$notificationId/mark-as-read');
+      final response = await http.patch(
+        uri,
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        print(
+            'Notification with ID $notificationId marked as read successfully.');
+      } else {
+        final Map<String, dynamic> errorData = json.decode(response.body);
+        throw Exception(
+            'Gagal menandai notifikasi sebagai terbaca: ${response.statusCode} - ${errorData['error'] ?? 'Unknown Error'}');
+      }
+    } catch (e) {
+      print('Error marking notification as read: $e');
+      rethrow;
+    }
+  }
+
+  // Menghapus notifikasi dari koleksi NOTIFICATIONS
+  Future<void> deleteNotification(String notificationId) async {
+    try {
+      final uri = Uri.parse(
+          '$baseUrl/notifications/$notificationId'); // Targetkan endpoint delete notifikasi
+      final response = await http.delete(
+        uri,
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        print(
+            'Notification with ID $notificationId deleted successfully from backend.');
+      } else {
+        final Map<String, dynamic> errorData = json.decode(response.body);
+        throw Exception(
+            'Gagal menghapus notifikasi: ${response.statusCode} - ${errorData['error'] ?? 'Unknown Error'}');
+      }
+    } catch (e) {
+      print('Error deleting notification: $e');
+      rethrow;
+    }
+  }
 }
+
+// Fungsi untuk mengambil notifikasi pengguna dari endpoint loan-requests

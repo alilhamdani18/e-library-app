@@ -23,7 +23,7 @@ class ProfileMenuItem extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         width: double.infinity,
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 236, 248, 239),
+          color: thirdColor,
           borderRadius: BorderRadius.circular(15),
         ),
         child: Row(

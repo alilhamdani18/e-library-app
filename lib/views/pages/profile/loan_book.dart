@@ -1,150 +1,187 @@
-// import 'package:e_library/models/list_book.dart';
-import 'package:e_library/utils/colors.dart';
 import 'package:e_library/components/book_card.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:e_library/services/api_service.dart'; // Pastikan ini ada
+import 'package:e_library/utils/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:e_library/services/api_service.dart';
 
 class LoanBook extends StatefulWidget {
-  const LoanBook({super.key});
+  final String userId;
+  const LoanBook({super.key, required this.userId});
 
   @override
   State<LoanBook> createState() => _LoanBookState();
 }
 
 class _LoanBookState extends State<LoanBook> {
-  int myIndex = 1;
-  List<dynamic> currentLoans = [];
-  List<dynamic> completedLoans = [];
-  bool isLoading = true;
+  // Hanya satu Future untuk mengambil semua riwayat pinjaman
+  late Future<List<dynamic>> _allUserLoansFuture;
 
   @override
   void initState() {
     super.initState();
-    fetchLoanHistory();
+    // Menggunakan hanya satu API service untuk semua riwayat pinjaman
+    _allUserLoansFuture = ApiService().getUserLoanHistory(widget.userId);
   }
 
-  Future<void> fetchLoanHistory() async {
-    try {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      final history = await ApiService().getUserLoanHistory(userId);
-
-      setState(() {
-        currentLoans =
-            history.where((loan) => loan['status'] == 'approved').toList();
-
-        completedLoans =
-            history.where((loan) => loan['status'] == 'returned').toList();
-
-        isLoading = false;
-      });
-      print(currentLoans);
-    } catch (e) {
-      print('Error: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+  // Metode untuk me-refresh data (opsional, jika diperlukan)
+  // void _refreshData() {
+  //   setState(() {
+  //     _allUserLoansFuture = ApiService().getUserLoanHistory(widget.userId);
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Jumlah tab
+      length: 2, // Dua tab: Sedang Dipinjam dan Sudah Dipinjam
       child: Scaffold(
         appBar: AppBar(
           leading: InkWell(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: Icon(
+            child: const Icon(
               Icons.arrow_back_ios_new_rounded,
               color: Colors.white,
             ),
           ),
-          title: Text(
+          title: const Text(
             'Buku Dipinjam',
             style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'InterBold',
-              fontSize: 20,
-            ),
+                color: Colors.white, fontFamily: 'InterSemiBold', fontSize: 20),
           ),
-          centerTitle: true,
           backgroundColor: primaryColor,
+          centerTitle: true,
+          bottom: TabBar(
+            isScrollable: false,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white.withOpacity(0.7),
+            indicatorColor: Colors.white,
+            tabs: const [
+              Tab(icon: Icon(Icons.menu_book), text: 'Sedang Dipinjam'),
+              Tab(
+                  icon: Icon(Icons.check_circle_outline),
+                  text: 'Sudah Dipinjam'),
+            ],
+          ),
         ),
-        body: isLoading
-            ? Center(child: CircularProgressIndicator())
-            : Container(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    TabBar(
-                      isScrollable: false,
-                      labelColor: primaryColor,
-                      unselectedLabelColor: greyColor,
-                      indicatorColor: primaryColor,
-                      tabs: const [
-                        Tab(
-                            icon: Icon(Icons.replay_rounded),
-                            text: 'Sedang Dipinjam'),
-                        Tab(
-                            icon: Icon(Icons.check_box),
-                            text: 'Sudah Dipinjam'),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: TabBarView(
-                        children: [
-                          // Sedang Dipinjam
-                          SingleChildScrollView(
-                            child: Column(
-                              children: currentLoans
-                                  .map((e) => BookCard(
-                                        bookId: e['bookId'] ?? '',
-                                        image: e['book']?['coverUrl'] ?? '',
-                                        title: e['book']?['title'] ?? '',
-                                        author: e['book']?['author'] ?? '',
-                                        year: e['book']?['year']?.toString() ??
-                                            '',
-                                        averageRating: e['book']
-                                                    ?['averageRating']
-                                                ?.toString() ??
-                                            '0.0',
-                                        availableStock:
-                                            e['book']?['availableStock'] ?? '',
-                                      ))
-                                  .toList(),
-                            ),
-                          ),
-                          // Sudah Dipinjam
-                          SingleChildScrollView(
-                            child: Column(
-                              children: completedLoans
-                                  .map((e) => BookCard(
-                                        bookId: e['bookId'] ?? '',
-                                        image: e['book']?['coverUrl'] ?? '',
-                                        title: e['book']?['title'] ?? '',
-                                        author: e['book']?['author'] ?? '',
-                                        year: e['book']?['year']?.toString() ??
-                                            '',
-                                        averageRating: e['book']
-                                                    ?['averageRating']
-                                                ?.toString() ??
-                                            '0.0',
-                                        availableStock:
-                                            e['book']?['availableStock'] ?? '',
-                                      ))
-                                  .toList(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        body: TabBarView(
+          children: [
+            // Konten untuk tab 'Sedang Dipinjam'
+            FutureBuilder<List<dynamic>>(
+              future: _allUserLoansFuture, // Menggunakan satu future yang sama
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  print('Error loading loan history: ${snapshot.error}');
+                  return Center(
+                    child: Text('Gagal memuat pinjaman: ${snapshot.error}'),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('Tidak ada buku yang sedang dipinjam.'),
+                  );
+                } else {
+                  // Filter hanya pinjaman yang 'approved' dari seluruh riwayat
+                  final currentLoans = snapshot.data!
+                      .where((loan) =>
+                          loan['status'] ==
+                          'approved') // Filter status 'approved'
+                      .toList();
+
+                  if (currentLoans.isEmpty) {
+                    return const Center(
+                      child: Text('Tidak ada buku yang sedang dipinjam.'),
+                    );
+                  }
+
+                  return ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: currentLoans.map((e) {
+                      final book = e['book'];
+                      if (book == null || book is! Map) {
+                        print(
+                            'Current loan entry found without valid book data: $e');
+                        return const SizedBox.shrink();
+                      }
+                      return BookCard(
+                        bookId: e['bookId']?.toString() ?? '',
+                        image: book['coverUrl']?.toString() ?? '',
+                        title: book['title']?.toString() ?? '',
+                        author: book['author']?.toString() ?? '',
+                        year: book['year']?.toString() ?? '',
+                        averageRating:
+                            book['averageRating']?.toString() ?? '0.0',
+                        availableStock: (book['availableStock'] is num)
+                            ? book['availableStock'] as num
+                            : num.tryParse(book['availableStock']?.toString() ??
+                                    '0') ??
+                                0,
+                      );
+                    }).toList(),
+                  );
+                }
+              },
+            ),
+
+            // Konten untuk tab 'Sudah Dipinjam'
+            FutureBuilder<List<dynamic>>(
+              future: _allUserLoansFuture, // Menggunakan satu future yang sama
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  print('Error loading loan history: ${snapshot.error}');
+                  return Center(
+                    child: Text(
+                        'Gagal memuat riwayat pinjaman: ${snapshot.error}'),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('Tidak ada buku yang sudah dipinjam.'),
+                  );
+                } else {
+                  // Filter hanya pinjaman yang 'returned' dari seluruh riwayat
+                  final completedLoans = snapshot.data!
+                      .where((loan) => loan['status'] == 'returned')
+                      .toList();
+
+                  if (completedLoans.isEmpty) {
+                    return const Center(
+                      child: Text('Tidak ada buku yang sudah dipinjam.'),
+                    );
+                  }
+
+                  return ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: completedLoans.map((e) {
+                      final book = e['book'];
+                      if (book == null || book is! Map) {
+                        print(
+                            'Completed loan entry found without valid book data: $e');
+                        return const SizedBox.shrink();
+                      }
+                      return BookCard(
+                        bookId: e['bookId']?.toString() ?? '',
+                        image: book['coverUrl']?.toString() ?? '',
+                        title: book['title']?.toString() ?? '',
+                        author: book['author']?.toString() ?? '',
+                        year: book['year']?.toString() ?? '',
+                        averageRating:
+                            book['averageRating']?.toString() ?? '0.0',
+                        availableStock: (book['availableStock'] is num)
+                            ? book['availableStock'] as num
+                            : num.tryParse(book['availableStock']?.toString() ??
+                                    '0') ??
+                                0,
+                      );
+                    }).toList(),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

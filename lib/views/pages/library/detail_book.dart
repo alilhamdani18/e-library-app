@@ -280,7 +280,8 @@ class _DetailsBookState extends State<DetailsBook> {
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.amber,
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 223, 170, 11),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),
@@ -357,8 +358,10 @@ class _DetailsBookState extends State<DetailsBook> {
                                     'Rating',
                                     iconColor: Colors.amber.shade700,
                                     valueColor: primaryColor),
-                                _infoColumn(Icons.calendar_month_rounded,
-                                    book!.year?.toString() ?? '-', 'Tahun',
+                                _infoColumn(
+                                    Icons.calendar_month_rounded,
+                                    book!.year?.toString() ?? '-',
+                                    'Tahun Terbit',
                                     iconColor: Colors.blue.shade700,
                                     valueColor: primaryColor),
                                 _infoColumn(Icons.menu_book_rounded,

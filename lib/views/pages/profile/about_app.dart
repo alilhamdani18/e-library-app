@@ -204,7 +204,6 @@ class _AboutAppState extends State<AboutApp> {
             ),
             GestureDetector(
               onTap: () {
-                // TODO: Implementasi membuka email client atau copy email ke clipboard
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Email dukungan disalin!')),
                 );

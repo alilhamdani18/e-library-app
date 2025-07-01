@@ -20,8 +20,9 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  int myIndex = 2;
-  String? userId;
+  int myIndex = 3;
+  String?
+      userId; // Tetap String? karena ini dari FirebaseAuth.instance.currentUser?.uid
   Map<String, dynamic>? userData;
   bool isLoading = true;
 
@@ -113,9 +114,6 @@ class _ProfileState extends State<Profile> {
         centerTitle: true,
       ),
       body: Container(
-        color: thirdColor,
-        width: double.infinity,
-        height: double.infinity,
         child: SafeArea(
           child: isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -197,14 +195,27 @@ class _ProfileState extends State<Profile> {
                               icon: Icons.person,
                               title: 'Data Pengguna',
                               onTap: () async {
-                                if (userId != null) {
+                                final currentUserId = FirebaseAuth.instance
+                                    .currentUser?.uid; // Ambil userId terbaru
+                                if (currentUserId != null) {
+                                  // Pastikan tidak null
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
+                                      // Jika UserProfile juga butuh userId, kirim di sini
                                       builder: (context) => UserProfile(),
                                     ),
                                   );
-                                  fetchUserData(userId!);
+                                  // Refresh data pengguna setelah kembali dari UserProfile
+                                  // Menggunakan currentUserId yang valid
+                                  fetchUserData(currentUserId);
+                                } else {
+                                  // Tangani jika pengguna tidak login
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Anda perlu login untuk melihat data pengguna.')),
+                                  );
                                 }
                               },
                               childColor: const Color.fromARGB(255, 4, 114, 31),
@@ -215,15 +226,24 @@ class _ProfileState extends State<Profile> {
                               title: 'Buku Tersimpan',
                               onTap: () {
                                 final user = FirebaseAuth.instance.currentUser;
-                                final userId = user?.uid;
-                                if (userId != null) {
+                                final currentUserId =
+                                    user?.uid; // Menggunakan variabel lokal
+                                if (currentUserId != null) {
+                                  // Memeriksa null
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => SavedBook(
-                                        userId: userId,
+                                        userId:
+                                            currentUserId, // Menggunakan currentUserId
                                       ),
                                     ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Anda perlu login untuk melihat buku tersimpan.')),
                                   );
                                 }
                               },
@@ -234,11 +254,26 @@ class _ProfileState extends State<Profile> {
                               icon: Icons.menu_book_outlined,
                               title: 'Buku Dipinjam',
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => const LoanBook()),
-                                );
+                                final user = FirebaseAuth.instance.currentUser;
+                                final currentUserId =
+                                    user?.uid; // Menggunakan variabel lokal
+                                if (currentUserId != null) {
+                                  // Memeriksa null
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LoanBook(
+                                          userId:
+                                              currentUserId), // <-- PERBAIKAN DI SINI
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Anda perlu login untuk melihat riwayat pinjaman.')),
+                                  );
+                                }
                               },
                               childColor: const Color.fromARGB(255, 4, 114, 31),
                             ),
