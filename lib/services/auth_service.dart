@@ -1,90 +1,97 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:google_sign_in/google_sign_in.dart'; // Hapus atau biarkan terkomentar
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // SIGN UP
-  Future<String?> signUpWithEmail(String name, String email, String password) async {
+  // Stream untuk memantau perubahan status otentikasi pengguna
+  Stream<User?> get user {
+    return _auth.authStateChanges();
+  }
+
+  // SIGN UP dengan Email & Password
+  // Mengembalikan UID pengguna jika berhasil, atau null jika gagal.
+  // Pesan error akan ditampilkan di konsol atau bisa ditangkap di UI.
+  Future<String?> signUpWithEmail(
+      String name, String email, String password) async {
     try {
-      // Buat akun di Firebase Auth
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      // 1. Buat akun pengguna di Firebase Auth
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Simpan data user ke Firestore
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'uid': userCredential.user!.uid,
-        'name': name,
-        'email': email,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      User? user = userCredential.user;
 
-      return null; // sukses
+      if (user != null) {
+        // 2. Simpan data pengguna ke Firestore
+        await _firestore.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'name': name,
+          'email': email,
+          'createdAt': FieldValue.serverTimestamp(),
+          // Anda bisa menambahkan field lain yang relevan di sini
+        });
+        return user.uid; // Mengembalikan UID jika sukses
+      }
+      return null; // Jika userCredential.user null
     } on FirebaseAuthException catch (e) {
-      return e.message;
+      debugPrint('Firebase Auth Error (Sign Up): ${e.code} - ${e.message}');
+      // Anda bisa mengembalikan pesan yang lebih spesifik berdasarkan e.code jika diperlukan
+      return null; // Mengembalikan null untuk menandakan kegagalan
     } catch (e) {
-      return 'Terjadi kesalahan saat registrasi.';
+      debugPrint('General Error (Sign Up): $e');
+      return null; // Mengembalikan null untuk menandakan kegagalan
     }
   }
 
-  // SIGN IN
+  // SIGN IN dengan Email & Password
+  // Mengembalikan UID pengguna jika berhasil, atau null jika gagal.
   Future<String?> signInWithEmail(String email, String password) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
-      return null; // sukses
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      return userCredential
+          .user?.uid; // Mengembalikan UID jika sukses, null jika tidak
     } on FirebaseAuthException catch (e) {
-      return e.message;
+      debugPrint('Firebase Auth Error (Sign In): ${e.code} - ${e.message}');
+      return null;
     } catch (e) {
-      return 'Terjadi kesalahan saat login.';
+      debugPrint('General Error (Sign In): $e');
+      return null;
     }
   }
-
-  // SIGN IN WITH GOOGLE
-  Future<User?> signInWithGoogle() async {
-  try {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return null; // user batal login
-
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    UserCredential userCredential = await _auth.signInWithCredential(credential);
-
-    // Simpan atau update data user ke Firestore
-    final userDoc = _firestore.collection('users').doc(userCredential.user!.uid);
-    final docSnapshot = await userDoc.get();
-
-    if (!docSnapshot.exists) {
-      await userDoc.set({
-        'uid': userCredential.user!.uid,
-        'name': userCredential.user!.displayName ?? '',
-        'email': userCredential.user!.email,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    }
-
-    return userCredential.user;
-  } catch (e) {
-    debugPrint('Google Sign-In Error: $e');
-    return null;
-  }
-}
-
 
   // LOGOUT
   Future<void> signOut() async {
-    await _auth.signOut();
-    await GoogleSignIn().signOut();
+    try {
+      // await GoogleSignIn().signOut(); // Hapus baris ini
+      await _auth.signOut();
+    } catch (e) {
+      debugPrint('Error signing out: $e');
+    }
   }
 
-  // GET CURRENT USER
+  // GET CURRENT USER (menggunakan properti Stream user di atas lebih disarankan untuk memantau status)
+  // Namun, jika Anda hanya perlu mengambil pengguna saat ini sekali:
   User? get currentUser => _auth.currentUser;
+
+  // Anda bisa menambahkan fungsi untuk mendapatkan detail pengguna dari Firestore jika diperlukan
+  Future<Map<String, dynamic>?> getUserDetails(String uid) async {
+    try {
+      DocumentSnapshot doc =
+          await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return doc.data() as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting user details: $e');
+      return null;
+    }
+  }
 }

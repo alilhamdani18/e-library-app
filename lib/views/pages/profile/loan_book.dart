@@ -1,5 +1,5 @@
-import 'package:e_library/components/book_card.dart';
-import 'package:e_library/services/api_service.dart'; // Pastikan ini ada
+import 'package:e_library/components/loan_detail_card.dart';
+import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -12,27 +12,39 @@ class LoanBook extends StatefulWidget {
 }
 
 class _LoanBookState extends State<LoanBook> {
-  // Hanya satu Future untuk mengambil semua riwayat pinjaman
   late Future<List<dynamic>> _allUserLoansFuture;
 
   @override
   void initState() {
     super.initState();
-    // Menggunakan hanya satu API service untuk semua riwayat pinjaman
     _allUserLoansFuture = ApiService().getUserLoanHistory(widget.userId);
   }
 
-  // Metode untuk me-refresh data (opsional, jika diperlukan)
-  // void _refreshData() {
-  //   setState(() {
-  //     _allUserLoansFuture = ApiService().getUserLoanHistory(widget.userId);
-  //   });
-  // }
+  // Fungsi helper untuk mengkonversi objek timestamp ke DateTime
+  DateTime? _parseTimestampToDateTime(dynamic timestamp) {
+    if (timestamp is Map && timestamp.containsKey('_seconds')) {
+      final int seconds = timestamp['_seconds'];
+      final int nanoseconds =
+          timestamp['_nanoseconds'] ?? 0; // Default 0 jika null
+      return DateTime.fromMillisecondsSinceEpoch(
+          seconds * 1000 + (nanoseconds / 1000000).round());
+    }
+    // Jika API Anda mengembalikan string ISO 8601, Anda bisa tambahkan ini:
+    // else if (timestamp is String) {
+    //   try {
+    //     return DateTime.parse(timestamp);
+    //   } catch (e) {
+    //     debugPrint('Failed to parse date string: $timestamp, Error: $e');
+    //     return null;
+    //   }
+    // }
+    return null; // Return null jika format tidak dikenali
+  }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Dua tab: Sedang Dipinjam dan Sudah Dipinjam
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           leading: InkWell(
@@ -68,7 +80,7 @@ class _LoanBookState extends State<LoanBook> {
           children: [
             // Konten untuk tab 'Sedang Dipinjam'
             FutureBuilder<List<dynamic>>(
-              future: _allUserLoansFuture, // Menggunakan satu future yang sama
+              future: _allUserLoansFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -82,11 +94,12 @@ class _LoanBookState extends State<LoanBook> {
                     child: Text('Tidak ada buku yang sedang dipinjam.'),
                   );
                 } else {
-                  // Filter hanya pinjaman yang 'approved' dari seluruh riwayat
+                  // Filter hanya pinjaman yang 'approved' dan belum dikembalikan
                   final currentLoans = snapshot.data!
                       .where((loan) =>
-                          loan['status'] ==
-                          'approved') // Filter status 'approved'
+                          loan['status'] == 'approved' &&
+                          loan['returnDate'] ==
+                              null) // Ganti 'returned_at' jadi 'returnDate'
                       .toList();
 
                   if (currentLoans.isEmpty) {
@@ -97,26 +110,39 @@ class _LoanBookState extends State<LoanBook> {
 
                   return ListView(
                     padding: const EdgeInsets.all(16),
-                    children: currentLoans.map((e) {
-                      final book = e['book'];
+                    children: currentLoans.map((loan) {
+                      final book = loan['book'];
                       if (book == null || book is! Map) {
                         print(
-                            'Current loan entry found without valid book data: $e');
+                            'Current loan entry found without valid book data: $loan');
                         return const SizedBox.shrink();
                       }
-                      return BookCard(
-                        bookId: e['bookId']?.toString() ?? '',
-                        image: book['coverUrl']?.toString() ?? '',
-                        title: book['title']?.toString() ?? '',
-                        author: book['author']?.toString() ?? '',
-                        year: book['year']?.toString() ?? '',
-                        averageRating:
-                            book['averageRating']?.toString() ?? '0.0',
-                        availableStock: (book['availableStock'] is num)
-                            ? book['availableStock'] as num
-                            : num.tryParse(book['availableStock']?.toString() ??
-                                    '0') ??
-                                0,
+
+                      // Menggunakan helper _parseTimestampToDateTime
+                      DateTime? approvedAt = _parseTimestampToDateTime(loan[
+                          'approvedDate']); // Ganti 'approved_at' jadi 'approvedDate'
+                      if (approvedAt == null) {
+                        print('Failed to parse approvedDate for loan: $loan');
+                        return const SizedBox
+                            .shrink(); // Lewati jika tanggal tidak valid
+                      }
+
+                      DateTime? returnedAt = _parseTimestampToDateTime(loan[
+                          'returnDate']); // Ganti 'returned_at' jadi 'returnDate'
+
+                      // Pastikan durationDays adalah int, gunakan 'loanDuration'
+                      int durationDays = (loan['loanDuration'] is num)
+                          ? (loan['loanDuration'] as num).toInt()
+                          : 0;
+
+                      return LoanDetailCard(
+                        bookTitle: book['title']?.toString() ??
+                            'Judul Tidak Diketahui',
+                        bookCoverUrl: book['coverUrl']?.toString() ?? '',
+                        loanStatus: loan['status']?.toString() ?? 'unknown',
+                        approvedAt: approvedAt,
+                        durationDays: durationDays,
+                        returnedAt: returnedAt,
                       );
                     }).toList(),
                   );
@@ -126,7 +152,7 @@ class _LoanBookState extends State<LoanBook> {
 
             // Konten untuk tab 'Sudah Dipinjam'
             FutureBuilder<List<dynamic>>(
-              future: _allUserLoansFuture, // Menggunakan satu future yang sama
+              future: _allUserLoansFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -141,7 +167,7 @@ class _LoanBookState extends State<LoanBook> {
                     child: Text('Tidak ada buku yang sudah dipinjam.'),
                   );
                 } else {
-                  // Filter hanya pinjaman yang 'returned' dari seluruh riwayat
+                  // Filter hanya pinjaman yang 'returned'
                   final completedLoans = snapshot.data!
                       .where((loan) => loan['status'] == 'returned')
                       .toList();
@@ -154,26 +180,38 @@ class _LoanBookState extends State<LoanBook> {
 
                   return ListView(
                     padding: const EdgeInsets.all(16),
-                    children: completedLoans.map((e) {
-                      final book = e['book'];
+                    children: completedLoans.map((loan) {
+                      final book = loan['book'];
                       if (book == null || book is! Map) {
                         print(
-                            'Completed loan entry found without valid book data: $e');
+                            'Completed loan entry found without valid book data: $loan');
                         return const SizedBox.shrink();
                       }
-                      return BookCard(
-                        bookId: e['bookId']?.toString() ?? '',
-                        image: book['coverUrl']?.toString() ?? '',
-                        title: book['title']?.toString() ?? '',
-                        author: book['author']?.toString() ?? '',
-                        year: book['year']?.toString() ?? '',
-                        averageRating:
-                            book['averageRating']?.toString() ?? '0.0',
-                        availableStock: (book['availableStock'] is num)
-                            ? book['availableStock'] as num
-                            : num.tryParse(book['availableStock']?.toString() ??
-                                    '0') ??
-                                0,
+
+                      // Menggunakan helper _parseTimestampToDateTime
+                      DateTime? approvedAt =
+                          _parseTimestampToDateTime(loan['approvedDate']);
+                      if (approvedAt == null) {
+                        print('Failed to parse approvedDate for loan: $loan');
+                        return const SizedBox.shrink();
+                      }
+
+                      DateTime? returnedAt =
+                          _parseTimestampToDateTime(loan['returnDate']);
+
+                      // Pastikan durationDays adalah int, gunakan 'loanDuration'
+                      int durationDays = (loan['loanDuration'] is num)
+                          ? (loan['loanDuration'] as num).toInt()
+                          : 0;
+
+                      return LoanDetailCard(
+                        bookTitle: book['title']?.toString() ??
+                            'Judul Tidak Diketahui',
+                        bookCoverUrl: book['coverUrl']?.toString() ?? '',
+                        loanStatus: loan['status']?.toString() ?? 'unknown',
+                        approvedAt: approvedAt,
+                        durationDays: durationDays,
+                        returnedAt: returnedAt,
                       );
                     }).toList(),
                   );

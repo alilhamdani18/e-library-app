@@ -1,6 +1,7 @@
 import 'package:e_library/models/book.dart';
 import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
+import 'package:e_library/views/pages/library/pdfViewer.dart';
 import 'package:e_library/widgets/loan_book_sheet.dart';
 import 'package:e_library/widgets/rating_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -143,11 +144,12 @@ class _DetailsBookState extends State<DetailsBook> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, color: Colors.red, size: 48),
-                      SizedBox(height: 8),
-                      Text('Gagal memuat data buku.',
+                      const Icon(Icons.error_outline,
+                          color: Colors.red, size: 48),
+                      const SizedBox(height: 8),
+                      const Text('Gagal memuat data buku.',
                           style: TextStyle(color: Colors.red, fontSize: 16)),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: fetchBookDetail,
                         style: ElevatedButton.styleFrom(
@@ -335,6 +337,51 @@ class _DetailsBookState extends State<DetailsBook> {
                                         style: TextStyle(
                                             color: primaryColor,
                                             fontFamily: 'InterSemiBold')),
+                                  ),
+                                ),
+                                const SizedBox(width: 15),
+                                Expanded(
+                                  // Tombol "Baca Buku"
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      if (book?.bookFileUrl != null &&
+                                          book!.bookFileUrl!.isNotEmpty) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                PdfBookViewerPage(
+                                              bookId:
+                                                  widget.bookId, // Kirim bookId
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'File PDF tidak tersedia untuk buku ini.'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                          255, 11, 142, 223), // Warna biru
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                    ),
+                                    child: Text(
+                                      'Baca Buku',
+                                      style: TextStyle(
+                                          color: textColor,
+                                          fontFamily: 'InterSemiBold'),
+                                    ),
                                   ),
                                 ),
                               ],

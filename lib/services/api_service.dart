@@ -313,6 +313,7 @@ class ApiService {
         final Map<String, dynamic> decoded = jsonDecode(response.body);
         final data = decoded['data'];
 
+        print('API Response for loans: ${response.body}');
         if (data is List) {
           return data;
         } else {

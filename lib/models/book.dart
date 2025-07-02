@@ -7,6 +7,7 @@ class Book {
   final num? availableStock;
   final String? description;
   final String? coverUrl;
+  final String? bookFileUrl;
   final double? averageRating;
   final int? pages;
   final String? category;
@@ -21,6 +22,7 @@ class Book {
     this.availableStock,
     this.description,
     this.coverUrl,
+    this.bookFileUrl,
     this.averageRating,
     this.pages,
     this.category,
@@ -37,6 +39,7 @@ class Book {
       description: json['description']?.toString(),
       availableStock: json['availableStock'],
       coverUrl: json['coverUrl']?.toString(),
+      bookFileUrl: json['bookFileUrl']?.toString(),
       averageRating: _parseDouble(json['averageRating']),
       pages: json['pages'] is int
           ? json['pages']
@@ -60,6 +63,7 @@ class Book {
       'availableStock': availableStock,
       'description': description,
       'coverUrl': coverUrl,
+      'bookFileUrl': bookFileUrl,
       'averageRating': averageRating,
       'pages': pages,
       'category': category,

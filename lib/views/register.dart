@@ -1,8 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:e_library/utils/dialog.dart';
-import 'package:e_library/views/main_screen.dart';
-import 'package:e_library/widgets/set_password.dart';
 import 'package:flutter/material.dart';
 import 'package:e_library/views/login.dart';
 import 'package:e_library/services/auth_service.dart';
@@ -16,78 +14,70 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   bool isHide = true;
+  bool isConfirmHide = true; // Added for confirm password visibility
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController =
+      TextEditingController(); // New controller
   TextEditingController userController = TextEditingController();
 
   void _handleRegister() async {
     final name = userController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text;
+    final confirmPassword =
+        confirmPasswordController.text; // Get confirm password
 
-    if (name.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
-      final result = await AuthService().signUpWithEmail(name, email, password);
-
-      if (!mounted) return;
-
-      if (result == null) {
-        showAwesomeLibraryDialog(
-          context,
-          title: 'Register Berhasil!',
-          message: 'Silahkan login',
-          dialogType: DialogType.success,
-          autoClose: true,
-          onOk: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => const Login(),
-              ),
-            );
-          },
-        );
-      } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(result)));
-      }
-    } else {
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Semua field wajib diisi')),
       );
+      return;
     }
-  }
 
-  Future<void> _handleGoogleSignUp() async {
-    final user = await AuthService().signInWithGoogle();
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password minimal 6 karakter')),
+      );
+      return;
+    }
+
+    // New validation: Check if passwords match
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Password dan Konfirmasi Password tidak cocok')),
+      );
+      return;
+    }
+
+    final String? resultUid =
+        await AuthService().signUpWithEmail(name, email, password);
 
     if (!mounted) return;
 
-    if (user != null) {
-      final isNewUser =
-          user.metadata.creationTime == user.metadata.lastSignInTime;
-
-      if (isNewUser) {
-        // Jika user baru, arahkan ke halaman buat password
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SetPasswordPage(email: user.email ?? ''),
-          ),
-        );
-      } else {
-        // Jika bukan user baru, langsung ke halaman utama
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const MainScreen(initialIndex: 0),
-          ),
-        );
-      }
-    } else {
-      // Gagal login Google
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login dengan Google gagal')),
+    if (resultUid != null) {
+      showAwesomeLibraryDialog(
+        context,
+        title: 'Register Berhasil!',
+        message: 'Silahkan login dengan akun Anda.',
+        dialogType: DialogType.success,
+        autoClose: true,
+        onOk: () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const Login(),
+            ),
+          );
+        },
       );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Registrasi gagal. Silakan coba lagi.')));
     }
   }
 
@@ -149,7 +139,7 @@ class _RegisterState extends State<Register> {
                                 contentPadding: const EdgeInsets.all(8),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
+                                  borderSide: const BorderSide(
                                       width: 0, style: BorderStyle.none),
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -184,11 +174,12 @@ class _RegisterState extends State<Register> {
                           padding: const EdgeInsets.only(bottom: 8),
                           child: TextFormField(
                             controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                                 contentPadding: const EdgeInsets.all(8),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
+                                  borderSide: const BorderSide(
                                       width: 0, style: BorderStyle.none),
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -220,15 +211,17 @@ class _RegisterState extends State<Register> {
                           ],
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.only(
+                              bottom: 8), // Changed from 16 to 8 for spacing
                           child: TextFormField(
                             controller: passwordController,
                             obscureText: isHide,
                             decoration: InputDecoration(
                                 suffixIcon: IconButton(
                                     onPressed: () {
-                                      isHide = !isHide;
-                                      setState(() {});
+                                      setState(() {
+                                        isHide = !isHide;
+                                      });
                                     },
                                     icon: Icon(
                                       isHide
@@ -239,7 +232,7 @@ class _RegisterState extends State<Register> {
                                 contentPadding: const EdgeInsets.all(8),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
+                                  borderSide: const BorderSide(
                                       width: 0, style: BorderStyle.none),
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -254,11 +247,68 @@ class _RegisterState extends State<Register> {
                                 )),
                           ),
                         ),
+                        // --- New: Konfirmasi Password field ---
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text(
+                                'Konfirmasi Password',
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontFamily: 'InterMedium',
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              bottom: 16), // Padding bottom for this field
+                          child: TextFormField(
+                            controller: confirmPasswordController,
+                            obscureText:
+                                isConfirmHide, // Use new visibility flag
+                            decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isConfirmHide =
+                                            !isConfirmHide; // Toggle confirm password visibility
+                                      });
+                                    },
+                                    icon: Icon(
+                                      isConfirmHide
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      color: textGreyColor,
+                                    )),
+                                contentPadding: const EdgeInsets.all(8),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                      width: 0, style: BorderStyle.none),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                        color: primaryColor, width: 2)),
+                                filled: true,
+                                fillColor: greyBtnColor,
+                                hintText: 'Konfirmasi Password',
+                                hintStyle: TextStyle(
+                                  color: textGreyColor,
+                                )),
+                          ),
+                        ),
+                        // --- End New: Konfirmasi Password field ---
                         Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              minimumSize: Size(double.infinity, 50),
+                              minimumSize: const Size(double.infinity, 50),
                               backgroundColor: primaryColor,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8)),
@@ -270,55 +320,6 @@ class _RegisterState extends State<Register> {
                                     color: textColor,
                                     fontSize: 16,
                                     fontFamily: 'InterSemiBold')),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Divider(),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                'atau',
-                                style: TextStyle(
-                                    color: textGreyColor, fontSize: 16),
-                              ),
-                            ),
-                            Expanded(
-                              child: Divider(),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: ElevatedButton.icon(
-                            onPressed: _handleGoogleSignUp,
-                            icon: Image.asset(
-                              'assets/images/google-icon.png',
-                              width: 24,
-                            ),
-                            label: const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 14),
-                              child: Text(
-                                'Sign Up dengan Google',
-                                style: TextStyle(
-                                  fontFamily: 'InterSemiBold',
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: greyBtnColor,
-                              foregroundColor: Colors.black,
-                              elevation: 0,
-                              side: BorderSide(color: primaryColor),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              minimumSize: const Size.fromHeight(50),
-                            ),
                           ),
                         ),
                       ],
