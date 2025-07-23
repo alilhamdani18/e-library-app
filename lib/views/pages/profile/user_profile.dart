@@ -22,9 +22,12 @@ class _UserProfileState extends State<UserProfile> {
 
   bool _isUpdating = false;
 
+  final fb.FirebaseAuth _auth =
+      fb.FirebaseAuth.instance; // Inisialisasi Firebase Auth
+
   Future<void> getUserData() async {
     try {
-      final fbUser = fb.FirebaseAuth.instance.currentUser;
+      final fbUser = _auth.currentUser; // Gunakan _auth
       if (fbUser == null) {
         setState(() {
           isLoading = false;
@@ -62,6 +65,340 @@ class _UserProfileState extends State<UserProfile> {
     getUserData();
   }
 
+  // --- Start of New Feature: Change Password ---
+  Future<void> _showChangePasswordSheet() async {
+    final TextEditingController oldPasswordController = TextEditingController();
+    final TextEditingController newPasswordController = TextEditingController();
+    final TextEditingController confirmNewPasswordController =
+        TextEditingController();
+
+    final fb.User? currentUser = _auth.currentUser;
+    if (currentUser == null ||
+        !currentUser.providerData
+            .any((info) => info.providerId == 'password')) {
+      showAwesomeLibraryDialog(
+        context,
+        title: 'Tidak Diizinkan',
+        message:
+            'Untuk mengubah kata sandi, Anda harus login menggunakan email dan kata sandi.',
+        dialogType: DialogType.info,
+        autoClose: true,
+        autoCloseDelay: const Duration(seconds: 3),
+        onOk: () {
+          Navigator.pop(context); // Tutup dialog
+        },
+      );
+      return;
+    }
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        maxChildSize: 0.85,
+        // initialChildSize: 0.60,
+        builder: (_, scrollController) => StatefulBuilder(
+          builder: (BuildContext context, StateSetter modalSetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                left: 24,
+                right: 24,
+                top: 12,
+              ),
+              child: ListView(
+                controller: scrollController,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 50,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Ubah Kata Sandi',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'InterSemiBold',
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: oldPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Kata Sandi Lama',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: newPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Kata Sandi Baru',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: confirmNewPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Konfirmasi Kata Sandi Baru',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: textColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _isUpdating
+                          ? null
+                          : () async {
+                              modalSetState(() {
+                                _isUpdating = true;
+                              });
+
+                              if (newPasswordController.text.isEmpty ||
+                                  confirmNewPasswordController.text.isEmpty) {
+                                showAwesomeLibraryDialog(context,
+                                    title: 'Perhatian',
+                                    message:
+                                        'Kata sandi baru tidak boleh kosong.',
+                                    dialogType: DialogType.info,
+                                    autoClose: true,
+                                    autoCloseDelay: const Duration(seconds: 2));
+                                modalSetState(() {
+                                  _isUpdating = false;
+                                });
+                                return;
+                              }
+
+                              if (newPasswordController.text !=
+                                  confirmNewPasswordController.text) {
+                                showAwesomeLibraryDialog(context,
+                                    title: 'Perhatian',
+                                    message: 'Kata sandi baru tidak cocok.',
+                                    dialogType: DialogType.info,
+                                    autoClose: true,
+                                    autoCloseDelay: const Duration(seconds: 2));
+                                modalSetState(() {
+                                  _isUpdating = false;
+                                });
+                                return;
+                              }
+
+                              try {
+                                fb.User? currentUser = _auth.currentUser;
+                                if (currentUser != null) {
+                                  // Re-authenticate user before changing password
+                                  fb.AuthCredential credential =
+                                      fb.EmailAuthProvider.credential(
+                                    email: currentUser.email!,
+                                    password: oldPasswordController.text,
+                                  );
+                                  await currentUser
+                                      .reauthenticateWithCredential(credential);
+                                  await currentUser.updatePassword(
+                                      newPasswordController.text);
+
+                                  if (mounted) {
+                                    showAwesomeLibraryDialog(context,
+                                        title: 'Berhasil',
+                                        message: 'Kata sandi berhasil diubah.',
+                                        dialogType: DialogType.success,
+                                        autoClose: true,
+                                        autoCloseDelay:
+                                            const Duration(seconds: 2),
+                                        onOk: () {
+                                      Navigator.pop(context); // Tutup dialog
+                                      Navigator.pop(
+                                          context); // Tutup bottom sheet
+                                    });
+                                  }
+                                }
+                              } on fb.FirebaseAuthException catch (e) {
+                                String errorMessage =
+                                    'Gagal mengubah kata sandi.';
+                                if (e.code == 'wrong-password') {
+                                  errorMessage = 'Kata sandi lama salah.';
+                                } else if (e.code == 'weak-password') {
+                                  errorMessage = 'Kata sandi terlalu lemah.';
+                                } else if (e.code == 'user-not-found' ||
+                                    e.code == 'invalid-email') {
+                                  errorMessage =
+                                      'Akun tidak ditemukan atau email tidak valid.';
+                                } else {
+                                  errorMessage =
+                                      'Terjadi kesalahan: ${e.message}';
+                                }
+
+                                if (mounted) {
+                                  showAwesomeLibraryDialog(context,
+                                      title: 'Gagal',
+                                      message: errorMessage,
+                                      dialogType: DialogType.error,
+                                      autoClose: true,
+                                      autoCloseDelay:
+                                          const Duration(seconds: 3));
+                                }
+                              } catch (e) {
+                                print('Error changing password: $e');
+                                if (mounted) {
+                                  showAwesomeLibraryDialog(context,
+                                      title: 'Terjadi Kesalahan',
+                                      message:
+                                          'Gagal mengubah kata sandi: ${e.toString()}',
+                                      dialogType: DialogType.error,
+                                      autoClose: true,
+                                      autoCloseDelay:
+                                          const Duration(seconds: 2));
+                                }
+                              } finally {
+                                modalSetState(() {
+                                  _isUpdating = false;
+                                });
+                              }
+                            },
+                      child: _isUpdating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Ubah Kata Sandi',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Future<void> _deleteAccount() async {
+  //   // Tampilkan dialog konfirmasi sebelum menghapus akun
+  //   showAwesomeLibraryDialog(
+  //     context,
+  //     title: 'Hapus Akun',
+  //     message:
+  //         'Apakah Anda yakin ingin menghapus akun ini? Tindakan ini tidak dapat dibatalkan.',
+  //     dialogType: DialogType.warning,
+  //     okText: 'Ya, Hapus',
+  //     cancelText: 'Batal',
+  //     onOk: () async {
+  //       setState(() {
+  //         _isUpdating = true;
+  //       });
+
+  //       try {
+  //         final fb.User? currentUser = _auth.currentUser;
+  //         if (currentUser != null) {
+  //           await currentUser.delete();
+  //           await ApiService().deleteUserProfile(userId);
+
+  //           if (mounted) {
+  //             showAwesomeLibraryDialog(context,
+  //                 title: 'Berhasil',
+  //                 message: 'Akun berhasil dihapus.',
+  //                 dialogType: DialogType.success,
+  //                 autoClose: true,
+  //                 autoCloseDelay: const Duration(seconds: 2), onOk: () {
+  //               // Navigasi ke halaman login atau halaman awal setelah penghapusan
+  //               Navigator.of(context)
+  //                   .pushNamedAndRemoveUntil('/login', (route) => false);
+  //             });
+  //           }
+  //         }
+  //       } on fb.FirebaseAuthException catch (e) {
+  //         String errorMessage = 'Gagal menghapus akun.';
+  //         if (e.code == 'requires-recent-login') {
+  //           errorMessage =
+  //               'Demi keamanan, Anda perlu login ulang untuk menghapus akun Anda.';
+  //           if (mounted) {
+  //             showAwesomeLibraryDialog(context,
+  //                 title: 'Perhatian',
+  //                 message: errorMessage,
+  //                 dialogType: DialogType.warning,
+  //                 autoClose: true,
+  //                 autoCloseDelay: const Duration(seconds: 3), onOk: () {
+  //               _auth.signOut();
+  //               Navigator.of(context)
+  //                   .pushNamedAndRemoveUntil('/login', (route) => false);
+  //             });
+  //           }
+  //         } else {
+  //           errorMessage = 'Terjadi kesalahan: ${e.message}';
+  //         }
+  //         print('Error deleting account: $e');
+  //         if (mounted) {
+  //           showAwesomeLibraryDialog(context,
+  //               title: 'Gagal',
+  //               message: errorMessage,
+  //               dialogType: DialogType.error,
+  //               autoClose: true,
+  //               autoCloseDelay: const Duration(seconds: 3));
+  //         }
+  //       } catch (e) {
+  //         print('Error deleting account: $e');
+  //         if (mounted) {
+  //           showAwesomeLibraryDialog(context,
+  //               title: 'Terjadi Kesalahan',
+  //               message: 'Gagal menghapus akun: ${e.toString()}',
+  //               dialogType: DialogType.error,
+  //               autoClose: true,
+  //               autoCloseDelay: const Duration(seconds: 2));
+  //         }
+  //       } finally {
+  //         setState(() {
+  //           _isUpdating = false;
+  //         });
+  //       }
+  //     },
+  //     onCancel: () {
+  //       setState(() {
+  //         _isUpdating = false;
+  //       });
+  //     },
+  //   );
+  // }
+
   Future<User?> _showEditProfileSheet() async {
     final nameController = TextEditingController(text: user?.name);
     final phoneController = TextEditingController(text: user?.phone);
@@ -77,7 +414,7 @@ class _UserProfileState extends State<UserProfile> {
       builder: (context) => DraggableScrollableSheet(
         expand: false,
         maxChildSize: 0.85,
-        initialChildSize: 0.60,
+        // initialChildSize: 0.60,
         builder: (_, scrollController) => StatefulBuilder(
           builder: (BuildContext context, StateSetter modalSetState) {
             return Padding(
@@ -251,22 +588,32 @@ class _UserProfileState extends State<UserProfile> {
 
       try {
         print('Uploading avatar for userId: $userId');
-        final updatedUserResponse = await ApiService().updateUserProfile(
+        print('User object BEFORE update: ${user?.toString()}');
+
+        final User? updatedAvatarResponse =
+            await ApiService().updateUserProfile(
           userId: userId,
           profileImage: imageFile,
         );
 
+        final String? newProfileImageUrl =
+            updatedAvatarResponse?.profileImageUrl;
+
         if (mounted) {
           setState(() {
-            final String? currentEmail = user?.email;
-            user = updatedUserResponse;
-            if (currentEmail != null) {
-              user!.email = currentEmail;
+            _isUpdating = false; // Nonaktifkan loading state
+
+            if (user != null && newProfileImageUrl != null) {
+              user = user!.copyWith(
+                profileImageUrl: newProfileImageUrl,
+                updatedAt: DateTime.now(),
+              );
+            } else if (updatedAvatarResponse != null) {
+              user = updatedAvatarResponse;
             }
-            _isUpdating = false;
           });
         }
-        print('Updated user data after avatar upload: $user');
+        print('Updated user data after avatar upload: ${user?.toString()}');
 
         if (mounted) {
           showAwesomeLibraryDialog(context,
@@ -321,13 +668,28 @@ class _UserProfileState extends State<UserProfile> {
                     user = updatedUser;
                   });
                 }
+              } else if (value == 'change_password') {
+                await _showChangePasswordSheet();
               }
+              // else if (value == 'delete_account') {
+              //   await _deleteAccount();
+              // }
             },
             itemBuilder: (context) => [
               const PopupMenuItem<String>(
                 value: 'edit',
                 child: Text('Edit Profil'),
               ),
+              const PopupMenuItem<String>(
+                // Item baru
+                value: 'change_password',
+                child: Text('Ubah Kata Sandi'),
+              ),
+              // const PopupMenuItem<String>(
+              //   // Item baru
+              //   value: 'delete_account',
+              //   child: Text('Hapus Akun'),
+              // ),
             ],
             icon: const Icon(Icons.more_vert, color: Colors.white),
           )
@@ -374,7 +736,7 @@ class _UserProfileState extends State<UserProfile> {
                                             fit: BoxFit.cover)
                                         : const DecorationImage(
                                             image: AssetImage(
-                                                'assets/images/placeholder_avatar.png'),
+                                                'assets/images/icon-app.png'),
                                             fit: BoxFit.cover),
                                   ),
                                 ),
@@ -382,6 +744,7 @@ class _UserProfileState extends State<UserProfile> {
                                   const CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                         Colors.white),
+                                    strokeWidth: 2,
                                   ),
                               ],
                             ),
@@ -418,20 +781,26 @@ class _UserProfileState extends State<UserProfile> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(
-                title,
-                style:
-                    const TextStyle(fontFamily: 'InterSemiBold', fontSize: 16),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                    color: textGreyColor,
-                    fontFamily: 'InterSemiBold',
-                    fontSize: 16),
-              ),
-            ]),
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                          fontFamily: 'InterSemiBold',
+                          fontSize: 16,
+                          color: primaryColor),
+                    ),
+                    Text(
+                      value,
+                      style: TextStyle(
+                          color: textGreyColor,
+                          fontFamily: 'InterSemiBold',
+                          fontSize: 16),
+                    ),
+                  ]),
+            ),
           ],
         ),
         const SizedBox(height: 20),

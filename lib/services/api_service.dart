@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const String baseUrl =
-      'https://e-library-backend-72451776465.asia-southeast2.run.app/api';
+      'https://e-library-api-72451776465.asia-southeast2.run.app/api';
 
   // Headers untuk request
   Map<String, String> get _headers => {
@@ -84,7 +84,7 @@ class ApiService {
       }
     } catch (e) {
       print('Error getting bookmarks: $e');
-      return []; // ✅ Jangan return null, return list kosong jika error
+      return [];
     }
   }
 
@@ -159,15 +159,14 @@ class ApiService {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/books/$userId/$bookId/ratings'),
-        headers:
-            _headers, // Pastikan kamu punya header ini kalau perlu Authorization, dll.
+        headers: _headers,
       );
 
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
-        return body['data']; // Ambil hanya bagian `data` untuk kemudahan
+        return body['data'];
       } else if (response.statusCode == 404) {
-        return null; // Belum pernah memberi rating
+        return null;
       } else {
         throw Exception('Failed to fetch rating: ${response.statusCode}');
       }
@@ -240,7 +239,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      return User.fromJson(jsonData['data']); // hanya ambil isi data
+      return User.fromJson(jsonData['data']);
     } else {
       throw Exception('Failed to load user');
     }
@@ -254,7 +253,6 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/users/profile/$userId');
     final request = http.MultipartRequest('PUT', uri);
 
-    // Tambahkan field teks
     if (profileData != null && profileData.isNotEmpty) {
       profileData.forEach((key, value) {
         if (value != null) {
@@ -263,7 +261,6 @@ class ApiService {
       });
     }
 
-    // Tambahkan file gambar jika ada
     if (profileImage != null) {
       final fileStream = http.ByteStream(profileImage.openRead());
       final length = await profileImage.length();
@@ -278,12 +275,6 @@ class ApiService {
       request.files.add(multipartFile);
     }
 
-    // Tambahkan header (jika pakai auth)
-    // request.headers.addAll({
-    //   'Accept': 'application/json',
-    //   'Authorization': 'Bearer YOUR_TOKEN_IF_ANY', // ganti jika perlu
-    // });
-
     // Kirim request
     print('Sending request with file: ${profileImage?.path}');
     final response = await request.send();
@@ -292,12 +283,26 @@ class ApiService {
       final responseBody = await response.stream.bytesToString();
       final decoded = json.decode(responseBody);
 
-      return User.fromJson(
-          decoded['data']); // Pastikan struktur response sesuai
+      return User.fromJson(decoded['data']);
     } else {
       final errorBody = await response.stream.bytesToString();
       throw Exception(
           'Failed to update user profile: ${response.statusCode}, $errorBody');
+    }
+  }
+
+  Future<void> deleteUserProfile(String userId) async {
+    try {
+      final response = await http
+          .delete(Uri.parse('$baseUrl/users/$userId')); // Sesuaikan endpoint
+
+      if (response.statusCode != 200) {
+        throw Exception(
+            'Failed to delete user profile: ${response.statusCode} ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Error in deleteUserProfile: $e');
+      rethrow;
     }
   }
 
@@ -336,7 +341,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> decoded = jsonDecode(response.body);
-        final data = decoded['data']; // Asumsi response juga ada key 'data'
+        final data = decoded['data'];
 
         if (data is List) {
           return data;
@@ -352,26 +357,61 @@ class ApiService {
     }
   }
 
-  // Books Methods - Tambahan untuk mendapatkan daftar buku
   Future<List<Book>> getBooks() async {
-    try {
-      final uri = Uri.parse('$baseUrl/books');
-      final response = await http.get(uri);
+    List<Book> allBooks = [];
+    int currentPage = 1;
+    bool hasMoreData = true;
+    int _limitPerPage = 10;
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        final bookResponse = BookResponse.fromJson(jsonData);
-        if (bookResponse.success) {
-          return bookResponse.data;
+    while (hasMoreData) {
+      final uri =
+          Uri.parse('$baseUrl/books?page=$currentPage&limit=$_limitPerPage');
+      debugPrint('Fetching books from: $uri');
+
+      try {
+        final response = await http.get(uri);
+        debugPrint('HTTP Response Status Code: ${response.statusCode}');
+        debugPrint('HTTP Response Body: ${response.body}');
+
+        if (response.statusCode == 200) {
+          final jsonData = json.decode(response.body);
+          final bookResponse = BookResponse.fromJson(jsonData);
+
+          if (bookResponse.success) {
+            if (bookResponse.data.isNotEmpty) {
+              allBooks.addAll(bookResponse.data);
+
+              if (bookResponse.data.length < _limitPerPage) {
+                hasMoreData = false;
+                debugPrint(
+                    'Reached end of data. Last page with ${bookResponse.data.length} books.');
+              } else {
+                currentPage++;
+              }
+            } else {
+              hasMoreData = false;
+              debugPrint('No more data found. Stopping pagination.');
+            }
+          } else {
+            final errorMessage = jsonData['message'] ??
+                'API returned success: false without specific message';
+            debugPrint('API Error (Page $currentPage): $errorMessage');
+            throw Exception('API returned success: false - $errorMessage');
+          }
         } else {
-          throw Exception('API returned success: false');
+          // Tangani status code non-200
+          debugPrint(
+              'Failed to load books from page $currentPage: ${response.statusCode}');
+          throw Exception('Failed to load books: ${response.statusCode}');
         }
-      } else {
-        throw Exception('Failed to load books: ${response.statusCode}');
+      } catch (e) {
+        debugPrint('Error getting books from page $currentPage: $e');
+        throw Exception('Error getting books: $e');
       }
-    } catch (e) {
-      throw Exception('Error getting books: $e');
     }
+
+    debugPrint('Total books fetched: ${allBooks.length}');
+    return allBooks;
   }
 
   Future<Map<String, dynamic>> getBookById(String bookId) async {
@@ -434,7 +474,6 @@ class ApiService {
     }
   }
 
-  // Menandai notifikasi sebagai terbaca di koleksi NOTIFICATIONS
   Future<void> markNotificationAsRead(String notificationId) async {
     try {
       final uri =
@@ -458,11 +497,9 @@ class ApiService {
     }
   }
 
-  // Menghapus notifikasi dari koleksi NOTIFICATIONS
   Future<void> deleteNotification(String notificationId) async {
     try {
-      final uri = Uri.parse(
-          '$baseUrl/notifications/$notificationId'); // Targetkan endpoint delete notifikasi
+      final uri = Uri.parse('$baseUrl/notifications/$notificationId');
       final response = await http.delete(
         uri,
         headers: _headers,
@@ -482,5 +519,3 @@ class ApiService {
     }
   }
 }
-
-// Fungsi untuk mengambil notifikasi pengguna dari endpoint loan-requests

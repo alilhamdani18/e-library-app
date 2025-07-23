@@ -1,9 +1,6 @@
 import 'package:e_library/models/book.dart';
-// import 'package:e_library/services/api_service.dart';
 import 'package:e_library/views/pages/library/detail_book.dart';
-// import 'package:e_library/widgets/loan_book_sheet.dart';
 import 'package:e_library/utils/colors.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BookCard extends StatefulWidget {
@@ -86,19 +83,26 @@ class _BookCardState extends State<BookCard> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(widget.title,
+                        Flexible(
+                          child: Text(
+                            widget.title,
                             style: TextStyle(
                               color: primaryColor,
                               fontFamily: 'InterBold',
-                              fontSize: 18,
-                            )),
+                              fontSize: 16,
+                            ),
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
                       ],
                     ),
                     Text(widget.author,
                         style: TextStyle(
                           color: textGreyColor,
                           fontFamily: 'InterMedium',
-                          fontSize: 14,
+                          fontSize: 13,
                         )),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -106,7 +110,7 @@ class _BookCardState extends State<BookCard> {
                           style: TextStyle(
                             color: textGreyColor,
                             fontFamily: 'InterMedium',
-                            fontSize: 14,
+                            fontSize: 13,
                           )),
                     ),
                     Row(
@@ -117,7 +121,7 @@ class _BookCardState extends State<BookCard> {
                             style: TextStyle(
                               color: textGreyColor,
                               fontFamily: 'InterMedium',
-                              fontSize: 14,
+                              fontSize: 13,
                             )),
                       ],
                     ),
@@ -125,10 +129,10 @@ class _BookCardState extends State<BookCard> {
                     Container(
                       decoration: BoxDecoration(
                         color: (widget.availableStock ?? 0) ==
-                                0 // Check if availableStock is 0 (or null, then 0)
+                                0 
                             ? const Color.fromARGB(255, 255, 199, 195)
                             : const Color.fromARGB(
-                                255, 194, 255, 196), // Original green if not 0
+                                255, 194, 255, 196), 
                         borderRadius: BorderRadius.circular(25),
                       ),
                       padding: const EdgeInsets.symmetric(
@@ -137,7 +141,7 @@ class _BookCardState extends State<BookCard> {
                         'Tersedia : ${(widget.availableStock ?? 0).toString()}', // Ensure it's always a string
                         style: TextStyle(
                             color:
-                                primaryColor), // Consider changing text color for red background if needed
+                                primaryColor), 
                       ),
                     )
                     // Text(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:e_library/utils/colors.dart'; // Sesuaikan path jika berbeda
-import 'package:intl/intl.dart'; // Import untuk formatting tanggal
+import 'package:e_library/utils/colors.dart'; 
+import 'package:intl/intl.dart';
 
 class LoanDetailCard extends StatelessWidget {
   final String bookTitle;
@@ -8,7 +8,7 @@ class LoanDetailCard extends StatelessWidget {
   final String loanStatus;
   final DateTime approvedAt;
   final int durationDays;
-  final DateTime? returnedAt; // Bisa null jika belum dikembalikan
+  final DateTime? returnedAt; 
 
   const LoanDetailCard({
     super.key,
@@ -20,12 +20,10 @@ class LoanDetailCard extends StatelessWidget {
     this.returnedAt,
   });
 
-  // Helper untuk format tanggal
   String _formatDate(DateTime date) {
     return DateFormat('dd MMMM yyyy').format(date);
   }
 
-  // Helper untuk mendapatkan warna status
   Color _getStatusColor(String status) {
     switch (status) {
       case 'approved':
@@ -43,7 +41,6 @@ class LoanDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Menghitung tanggal jatuh tempo
     final DateTime dueDate = approvedAt.add(Duration(days: durationDays));
 
     return Card(
@@ -57,7 +54,6 @@ class LoanDetailCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar sampul buku
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
@@ -110,7 +106,6 @@ class LoanDetailCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // Tanggal Disetujui
                   Row(
                     children: [
                       Icon(Icons.date_range, size: 16, color: textGreyColor),
@@ -123,7 +118,6 @@ class LoanDetailCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // Durasi Pinjaman
                   Row(
                     children: [
                       Icon(Icons.timelapse, size: 16, color: textGreyColor),
@@ -136,7 +130,6 @@ class LoanDetailCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // Tanggal Jatuh Tempo
                   Row(
                     children: [
                       Icon(Icons.calendar_today, size: 16, color: Colors.red[400]),
@@ -149,7 +142,6 @@ class LoanDetailCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // Tanggal Dikembalikan (hanya tampil jika sudah dikembalikan)
                   if (returnedAt != null)
                     Row(
                       children: [

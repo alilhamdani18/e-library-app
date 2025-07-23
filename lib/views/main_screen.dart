@@ -1,5 +1,5 @@
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/views/pages/notifications.dart';
+import 'package:e_library/views/pages/notification/notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:e_library/views/pages/home/home.dart';
 import 'package:e_library/views/pages/library/library.dart';
@@ -23,7 +23,6 @@ class _MainScreenState extends State<MainScreen> {
     _selectedIndex = widget.initialIndex;
   }
 
-  // List halaman yang akan ditampilkan
   final List<Widget> _pages = [
     const Home(),
     const Library(),
@@ -42,8 +41,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: widget.nestedPage ?? _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        // Background color of the navigation bar itself
-        backgroundColor: primaryColor, // Ini akan membuat latar belakang hijau
+        backgroundColor: primaryColor,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -63,16 +61,12 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        // Warna item yang dipilih (ikon dan label)
-        selectedItemColor:
-            textColor, // Ganti ini agar kontras dengan primaryColor
-        // Warna item yang tidak dipilih (ikon dan label)
+        selectedItemColor: textColor, 
         unselectedItemColor: textColor,
         onTap: _onItemTapped,
         showSelectedLabels: true,
         showUnselectedLabels: false,
-        type: BottomNavigationBarType
-            .fixed, // Penting: Jika jumlah item > 3, gunakan fixed
+        type: BottomNavigationBarType.fixed, 
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:e_library/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter/services.dart';
 
 class AboutApp extends StatefulWidget {
   const AboutApp({super.key});
@@ -11,8 +12,9 @@ class AboutApp extends StatefulWidget {
 
 class _AboutAppState extends State<AboutApp> {
   String _appName = 'E-Library App';
-  String _version = '1.0.0'; // Default value
-  String _buildNumber = '1'; // Default value
+  String _version = '1.0.0'; 
+  String _buildNumber = '1'; 
+  final String _supportEmail = 'libraryhpmk@gmail.com'; 
 
   @override
   void initState() {
@@ -20,7 +22,6 @@ class _AboutAppState extends State<AboutApp> {
     _initPackageInfo();
   }
 
-  // Fungsi untuk mendapatkan informasi aplikasi (nama, versi, build number)
   Future<void> _initPackageInfo() async {
     try {
       final info = await PackageInfo.fromPlatform();
@@ -30,13 +31,36 @@ class _AboutAppState extends State<AboutApp> {
         _buildNumber = info.buildNumber;
       });
     } catch (e) {
-      // Handle error jika package info tidak bisa diambil
       print('Error getting package info: $e');
       setState(() {
         _appName = 'E-Library App';
         _version = 'N/A';
         _buildNumber = 'N/A';
       });
+    }
+  }
+
+  Future<void> _copyEmail() async {
+    try {
+      await Clipboard.setData(ClipboardData(text: _supportEmail));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Email "$_supportEmail" telah disalin ke clipboard.'),
+            duration: const Duration(seconds: 2), 
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menyalin email. Silakan coba lagi.'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      print('Error copying email to clipboard: $e');
     }
   }
 
@@ -54,7 +78,7 @@ class _AboutAppState extends State<AboutApp> {
           ),
         ),
         title: const Text(
-          'Tentang Aplikasi', // Ubah teks menjadi Bahasa Indonesia
+          'Tentang Aplikasi',
           style: TextStyle(
               color: Colors.white, fontFamily: 'InterSemiBold', fontSize: 20),
         ),
@@ -68,8 +92,8 @@ class _AboutAppState extends State<AboutApp> {
           children: [
             Center(
               child: Image.asset(
-                'assets/images/logo.png', // Pastikan path logo aplikasi Anda benar
-                height: 120, // Sesuaikan ukuran logo
+                'assets/images/logo.png',
+                height: 120,
                 width: 120,
               ),
             ),
@@ -137,6 +161,12 @@ class _AboutAppState extends State<AboutApp> {
                 'Rekomendasi Personal: Temukan buku baru berdasarkan rating tertinggi.',
                 Icons.star),
             _buildFeaturePoint(
+                'Pengajuan Pinjaman Buku: Ajukan pinjaman buku fisik dengan mudah melalui aplikasi.',
+                Icons.book_online),
+            _buildFeaturePoint(
+                'Baca Buku Online: Nikmati membaca beberapa buku digital langsung di dalam aplikasi.',
+                Icons.menu_book),
+            _buildFeaturePoint(
                 'Antarmuka Intuitif: Navigasi yang mudah dan desain yang ramah pengguna.',
                 Icons.devices),
             _buildFeaturePoint(
@@ -159,28 +189,31 @@ class _AboutAppState extends State<AboutApp> {
             _buildUsagePoint(
                 '1. Registrasi/Login',
                 'Daftarkan akun baru atau masuk dengan akun yang sudah ada. Jika Anda sudah memiliki akun, masukkan email dan kata sandi Anda. Jika belum, lakukan pendaftaran cepat.',
-                'user_add_rounded' // Contoh icon, bisa diganti
-                ),
+                'person_add_rounded'),
             _buildUsagePoint(
                 '2. Jelajahi Kategori',
                 'Di halaman utama, Anda bisa melihat berbagai kategori buku. Ketuk kategori untuk melihat daftar buku di dalamnya. Anda juga bisa melihat buku-buku rekomendasi berdasarkan rating dan buku-buku lainnya.',
-                'category' // Contoh icon, bisa diganti
-                ),
+                'category'),
             _buildUsagePoint(
                 '3. Cari Buku',
                 'Gunakan fitur pencarian untuk menemukan buku berdasarkan judul atau penulis. Ketuk ikon pencarian dan masukkan kata kunci Anda.',
-                'search' // Contoh icon, bisa diganti
-                ),
+                'search'),
             _buildUsagePoint(
                 '4. Lihat Detail Buku',
                 'Ketuk kartu buku untuk melihat detail lengkap seperti sinopsis, penulis, rating, dan stok tersedia. Di halaman detail, Anda mungkin menemukan opsi untuk membaca buku (jika fitur ini tersedia).',
-                'info_outline' // Contoh icon, bisa diganti
-                ),
+                'info_outline'),
             _buildUsagePoint(
-                '5. Kelola Profil',
+                '5. Ajukan Pinjaman Buku (Fisik)',
+                'Untuk meminjam buku fisik, buka Detail Buku yang ingin Anda pinjam. Jika buku tersedia, Anda akan menemukan opsi untuk Ajukan Pinjaman. Pilih Durasi Pinjaman yang diinginkan, lalu Ajukan. Permintaan Anda akan dikirim ke pustakawan untuk disetujui.',
+                'book_online'),
+            _buildUsagePoint(
+                '6. Baca Buku Online (Digital)',
+                'Untuk buku yang tersedia dalam format digital, Anda bisa langsung membacanya secara online. Setelah membuka Detail Buku, cari tombol atau opsi Baca Buku untuk memulai sesi membaca Anda.',
+                'menu_book'),
+            _buildUsagePoint(
+                '7. Kelola Profil',
                 'Ketuk ikon profil di pojok kanan atas untuk melihat dan mengedit informasi profil Anda. Anda dapat memperbarui nama, email, atau gambar profil.',
-                'account_circle' // Contoh icon, bisa diganti
-                ),
+                'account_circle'),
             const SizedBox(height: 20),
             Text(
               'Dukungan',
@@ -203,13 +236,9 @@ class _AboutAppState extends State<AboutApp> {
               textAlign: TextAlign.justify,
             ),
             GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Email dukungan disalin!')),
-                );
-              },
+              onTap: _copyEmail,
               child: Text(
-                'support@elibraryapp.com', // Ganti dengan email dukungan Anda
+                _supportEmail,
                 style: TextStyle(
                   fontSize: 16,
                   color: primaryColor,
@@ -242,8 +271,7 @@ class _AboutAppState extends State<AboutApp> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon,
-              size: 20, color: primaryColor), // Menggunakan icon yang diberikan
+          Icon(icon, size: 20, color: primaryColor),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -263,9 +291,8 @@ class _AboutAppState extends State<AboutApp> {
   // Helper Widget untuk Cara Penggunaan
   Widget _buildUsagePoint(String title, String description, String iconName) {
     IconData icon;
-    // Menggunakan switch case untuk mapping string ke IconData
     switch (iconName) {
-      case 'user_add_rounded':
+      case 'person_add_rounded':
         icon = Icons.person_add_rounded;
         break;
       case 'category':
@@ -276,6 +303,12 @@ class _AboutAppState extends State<AboutApp> {
         break;
       case 'info_outline':
         icon = Icons.info_outline;
+        break;
+      case 'book_online':
+        icon = Icons.book_online;
+        break;
+      case 'menu_book':
+        icon = Icons.menu_book;
         break;
       case 'account_circle':
         icon = Icons.account_circle;

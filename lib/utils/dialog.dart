@@ -7,6 +7,7 @@ void showAwesomeLibraryDialog(
   required String message,
   required DialogType dialogType,
   VoidCallback? onOk,
+  VoidCallback? onCancel,
   bool showCancelBtn = false,
   bool autoClose = false,
   Duration autoCloseDelay = const Duration(seconds: 2),
@@ -27,7 +28,7 @@ void showAwesomeLibraryDialog(
     btnOkText: okText,
     btnCancelText: cancelText,
     btnOkOnPress: onOk,
-    btnCancelOnPress: showCancelBtn ? () {} : null,
+    btnCancelOnPress: onCancel,
   );
 
   dialog.show();

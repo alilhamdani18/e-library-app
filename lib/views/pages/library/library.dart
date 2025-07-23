@@ -24,12 +24,21 @@ class _LibraryState extends State<Library> {
   final TextEditingController _searchController = TextEditingController();
   List<Book> _filteredBooks = [];
 
-  final List<String> categories = [
-    'Romance',
-    'Motivation',
+  final List<String> primaryCategories = [
+    'Islamic',
     'Novel',
-    'Manga',
-    'Pendidikan'
+    'Motivation',
+    'Pendidikan',
+    'Kitab',
+  ];
+
+  final List<String> displayCategories = [
+    'Islamic',
+    'Novel',
+    'Motivation',
+    'Pendidikan',
+    'Kitab',
+    'Lainnya', 
   ];
 
   @override
@@ -39,8 +48,7 @@ class _LibraryState extends State<Library> {
       setState(() {
         _filteredBooks = allBooks;
       });
-      _searchController
-          .addListener(_onSearchChanged);
+      _searchController.addListener(_onSearchChanged);
     });
   }
 
@@ -57,16 +65,31 @@ class _LibraryState extends State<Library> {
       errorMessage = '';
     });
     try {
-      final books = await _apiService.getBooks();
+      final books =
+          await _apiService.getBooks(); 
       setState(() {
         allBooks = books;
-        categorizedBooks
-            .clear();
-        for (var category in categories) {
-          categorizedBooks[category] = books
-              .where((b) => b.category?.toLowerCase() == category.toLowerCase())
-              .toList();
+        categorizedBooks.clear();  
+        for (var category in primaryCategories) {
+          categorizedBooks[category] = []; 
         }
+        categorizedBooks['Lainnya'] = []; 
+        for (var book in books) {
+          bool assigned = false;
+          if (book.category != null) {
+            for (var category in primaryCategories) {
+              if (book.category!.toLowerCase() == category.toLowerCase()) {
+                categorizedBooks[category]!.add(book);
+                assigned = true;
+                break; 
+              }
+            }
+          }
+          if (!assigned) {
+            categorizedBooks['Lainnya']!.add(book);
+          }
+        }
+
         isLoading = false;
       });
     } catch (e) {
@@ -215,14 +238,12 @@ class _LibraryState extends State<Library> {
                         ),
                         Expanded(
                           child: TextField(
-                            controller:
-                                _searchController,
+                            controller: _searchController,
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(
                                 borderSide: BorderSide.none,
                               ),
-                              hintText:
-                                  'Search by title or author...',
+                              hintText: 'Search by title or author...',
                               filled: false,
                             ),
                           ),
@@ -252,15 +273,25 @@ class _LibraryState extends State<Library> {
               ],
             ),
             const SizedBox(height: 20),
-
             if (isSearching)
               _buildSearchResults()
             else
-              ...categorizedBooks.entries.map((entry) {
-                final category = entry.key;
-                final books = entry.value;
+              // Loop melalui displayCategories untuk memastikan urutan yang diinginkan
+              ...displayCategories.map((category) {
+                final booksInCategory = categorizedBooks[category] ?? [];
 
-                if (books.isEmpty) return const SizedBox();
+                // Filter 5 buku pertama untuk tampilan slide
+                final limitedBooks = booksInCategory.take(5).toList();
+
+                if (limitedBooks.isEmpty && category != 'Lainnya') {
+                  // Jangan tampilkan judul kategori jika tidak ada buku, kecuali untuk 'Lainnya' jika ingin selalu ada
+                  return const SizedBox();
+                }
+
+                // Jika kategori Lainnya kosong, bisa juga disembunyikan
+                if (category == 'Lainnya' && booksInCategory.isEmpty) {
+                  return const SizedBox();
+                }
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,29 +307,33 @@ class _LibraryState extends State<Library> {
                             fontSize: 18,
                           ),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CategoryBooksPage(
-                                  category: category,
-                                  books: books,
+                        if (booksInCategory.length >
+                            5) 
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CategoryBooksPage(
+                                    category: category,
+                                    books:
+                                        booksInCategory, // Kirim semua buku untuk kategori ini
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          child: const Text('Lihat Semua'),
-                        ),
+                              );
+                            },
+                            child: const Text('Lihat Semua'),
+                          ),
                       ],
                     ),
                     SizedBox(
                       height: 230,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: books.length,
+                        // Gunakan limitedBooks untuk menampilkan hanya 5 buku
+                        itemCount: limitedBooks.length,
                         itemBuilder: (context, index) {
-                          final book = books[index];
+                          final book = limitedBooks[index];
                           return BookCardSlide(
                             bookId: book.id,
                             image: book.coverUrl ?? '',
@@ -308,6 +343,8 @@ class _LibraryState extends State<Library> {
                         },
                       ),
                     ),
+                    const SizedBox(
+                        height: 20), // Tambahkan spasi antar kategori
                   ],
                 );
               }),
@@ -349,8 +386,7 @@ class _LibraryState extends State<Library> {
         const SizedBox(height: 10),
         ListView.builder(
           shrinkWrap: true,
-          physics:
-              const NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: _filteredBooks.length,
           itemBuilder: (context, index) {
             final book = _filteredBooks[index];

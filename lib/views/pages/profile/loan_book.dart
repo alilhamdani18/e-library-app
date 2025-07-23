@@ -20,7 +20,6 @@ class _LoanBookState extends State<LoanBook> {
     _allUserLoansFuture = ApiService().getUserLoanHistory(widget.userId);
   }
 
-  // Fungsi helper untuk mengkonversi objek timestamp ke DateTime
   DateTime? _parseTimestampToDateTime(dynamic timestamp) {
     if (timestamp is Map && timestamp.containsKey('_seconds')) {
       final int seconds = timestamp['_seconds'];
@@ -29,16 +28,8 @@ class _LoanBookState extends State<LoanBook> {
       return DateTime.fromMillisecondsSinceEpoch(
           seconds * 1000 + (nanoseconds / 1000000).round());
     }
-    // Jika API Anda mengembalikan string ISO 8601, Anda bisa tambahkan ini:
-    // else if (timestamp is String) {
-    //   try {
-    //     return DateTime.parse(timestamp);
-    //   } catch (e) {
-    //     debugPrint('Failed to parse date string: $timestamp, Error: $e');
-    //     return null;
-    //   }
-    // }
-    return null; // Return null jika format tidak dikenali
+  
+    return null; 
   }
 
   @override
@@ -78,7 +69,6 @@ class _LoanBookState extends State<LoanBook> {
         ),
         body: TabBarView(
           children: [
-            // Konten untuk tab 'Sedang Dipinjam'
             FutureBuilder<List<dynamic>>(
               future: _allUserLoansFuture,
               builder: (context, snapshot) {
@@ -94,12 +84,11 @@ class _LoanBookState extends State<LoanBook> {
                     child: Text('Tidak ada buku yang sedang dipinjam.'),
                   );
                 } else {
-                  // Filter hanya pinjaman yang 'approved' dan belum dikembalikan
                   final currentLoans = snapshot.data!
                       .where((loan) =>
                           loan['status'] == 'approved' &&
                           loan['returnDate'] ==
-                              null) // Ganti 'returned_at' jadi 'returnDate'
+                              null) 
                       .toList();
 
                   if (currentLoans.isEmpty) {
@@ -118,19 +107,18 @@ class _LoanBookState extends State<LoanBook> {
                         return const SizedBox.shrink();
                       }
 
-                      // Menggunakan helper _parseTimestampToDateTime
+                     
                       DateTime? approvedAt = _parseTimestampToDateTime(loan[
-                          'approvedDate']); // Ganti 'approved_at' jadi 'approvedDate'
+                          'approvedDate']); 
                       if (approvedAt == null) {
                         print('Failed to parse approvedDate for loan: $loan');
                         return const SizedBox
-                            .shrink(); // Lewati jika tanggal tidak valid
+                            .shrink(); 
                       }
 
                       DateTime? returnedAt = _parseTimestampToDateTime(loan[
-                          'returnDate']); // Ganti 'returned_at' jadi 'returnDate'
+                          'returnDate']); 
 
-                      // Pastikan durationDays adalah int, gunakan 'loanDuration'
                       int durationDays = (loan['loanDuration'] is num)
                           ? (loan['loanDuration'] as num).toInt()
                           : 0;
@@ -150,7 +138,6 @@ class _LoanBookState extends State<LoanBook> {
               },
             ),
 
-            // Konten untuk tab 'Sudah Dipinjam'
             FutureBuilder<List<dynamic>>(
               future: _allUserLoansFuture,
               builder: (context, snapshot) {
@@ -167,7 +154,6 @@ class _LoanBookState extends State<LoanBook> {
                     child: Text('Tidak ada buku yang sudah dipinjam.'),
                   );
                 } else {
-                  // Filter hanya pinjaman yang 'returned'
                   final completedLoans = snapshot.data!
                       .where((loan) => loan['status'] == 'returned')
                       .toList();
@@ -188,7 +174,6 @@ class _LoanBookState extends State<LoanBook> {
                         return const SizedBox.shrink();
                       }
 
-                      // Menggunakan helper _parseTimestampToDateTime
                       DateTime? approvedAt =
                           _parseTimestampToDateTime(loan['approvedDate']);
                       if (approvedAt == null) {
@@ -199,7 +184,6 @@ class _LoanBookState extends State<LoanBook> {
                       DateTime? returnedAt =
                           _parseTimestampToDateTime(loan['returnDate']);
 
-                      // Pastikan durationDays adalah int, gunakan 'loanDuration'
                       int durationDays = (loan['loanDuration'] is num)
                           ? (loan['loanDuration'] as num).toInt()
                           : 0;

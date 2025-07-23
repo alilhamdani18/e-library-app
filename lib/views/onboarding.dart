@@ -44,7 +44,7 @@ class _OnboardingState extends State<Onboarding> {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(onboardingData[i]['image']),
+                      Image.network(onboardingData[i]['image']),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Column(

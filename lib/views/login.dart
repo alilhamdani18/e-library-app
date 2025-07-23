@@ -1,10 +1,11 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:e_library/utils/colors.dart';
-import 'package:e_library/utils/dialog.dart'; 
+import 'package:e_library/utils/dialog.dart';
 import 'package:e_library/views/main_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:e_library/views/register.dart'; 
-import 'package:e_library/services/auth_service.dart'; 
+import 'package:e_library/views/register.dart';
+import 'package:e_library/services/auth_service.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -15,7 +16,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   bool isHide = true;
-  bool _isLoading = false; 
+  bool _isLoading = false;
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -25,6 +26,7 @@ class _LoginState extends State<Login> {
     final password = passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Email dan password wajib diisi')),
       );
@@ -33,55 +35,84 @@ class _LoginState extends State<Login> {
 
     final emailRegex = RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$");
     if (!emailRegex.hasMatch(email)) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Format email tidak valid')),
       );
       return;
     }
 
+    if (!mounted) return;
     setState(() {
-      _isLoading = true; 
+      _isLoading = true;
     });
 
-    final result = await AuthService().signInWithEmail(email, password);
+    try {
+      await AuthService().signInWithEmail(email, password);
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
 
-    if (!mounted)
-      return; 
-
-    setState(() {
-      _isLoading = false; 
-    });
-
-    if (result == null) {
       showAwesomeLibraryDialog(
         context,
-        title: 'Login Berhasil!',
-        message: 'Selamat datang kembali!',
+        title: 'Login Berhasil! 🎉', 
+        message: 'Selamat datang!',
         dialogType: DialogType.success,
         autoClose: true,
         onOk: () {
-        
+          if (!mounted) return;
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (_) => const MainScreen(initialIndex: 0),
             ),
-            (Route<dynamic> route) =>
-                false, 
+            (Route<dynamic> route) => false,
           );
         },
       );
-    } else {
-      // Gagal login
+    } on FirebaseAuthException catch (e) {
+      // Tangani exception spesifik dari Firebase Authentication
+      String errorMessage;
+      if (e.code == 'user-not-found') {
+        errorMessage = 'Email tidak ditemukan.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Password salah.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'Format email tidak valid.';
+      } else if (e.code == 'invalid-credential') {
+        errorMessage = 'Email atau password salah.';
+      } else {
+        errorMessage = e.message ?? 'Terjadi kesalahan tidak dikenal.';
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+
       showAwesomeLibraryDialog(
         context,
-        title: 'Login Gagal',
-        message: result, 
+        title: 'Login Gagal 😞', // Emoji untuk gagal
+        message: errorMessage,
         dialogType: DialogType.error,
         autoClose: true,
-        onOk: () {
-        },
+        onOk: () {},
       );
-    
+    } catch (e) {
+      // Tangani exception umum lainnya
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+
+      showAwesomeLibraryDialog(
+        context,
+        title: 'Login Gagal 🚨', 
+        message: 'Terjadi kesalahan tidak terduga: ${e.toString()}',
+        dialogType: DialogType.error,
+        autoClose: true,
+        onOk: () {},
+      );
     }
   }
 
@@ -100,10 +131,8 @@ class _LoginState extends State<Login> {
         onTap: () {
           FocusScope.of(context).unfocus();
         },
-        splashFactory: NoSplash
-            .splashFactory, 
-        highlightColor:
-            Colors.transparent, 
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: Colors.transparent,
         child: Column(
           children: [
             Expanded(
@@ -232,9 +261,7 @@ class _LoginState extends State<Login> {
                               borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        onPressed: _isLoading
-                            ? null
-                            : _handleLogin, 
+                        onPressed: _isLoading ? null : _handleLogin,
                         child: _isLoading
                             ? SizedBox(
                                 height: 20,

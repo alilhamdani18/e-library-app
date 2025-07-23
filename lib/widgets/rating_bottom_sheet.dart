@@ -45,16 +45,14 @@ void showRatingDialog({
 
         onSuccess();
 
-        showAwesomeLibraryDialog(
-          context,
-          title: 'Sukses',
-          message: isEdit
-              ? 'Rating berhasil diperbarui!'
-              : 'Rating berhasil dikirim!',
-          dialogType: DialogType.success,
-          autoClose: true,
-          autoCloseDelay: Duration(seconds: 1)
-        );
+        showAwesomeLibraryDialog(context,
+            title: 'Sukses',
+            message: isEdit
+                ? 'Rating berhasil diperbarui!'
+                : 'Rating berhasil dikirim!',
+            dialogType: DialogType.success,
+            autoClose: true,
+            autoCloseDelay: Duration(seconds: 1));
       } catch (e) {
         debugPrint('Error detail: $e');
         showAwesomeLibraryDialog(
@@ -96,15 +94,15 @@ void showRatingDialog({
                 },
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: reviewController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Tulis ulasan (opsional)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 8),
+              // TextField(
+              //   controller: reviewController,
+              //   maxLines: 3,
+              //   decoration: InputDecoration(
+              //     hintText: 'Tulis ulasan (opsional)',
+              //     border: OutlineInputBorder(),
+              //   ),
+              // ),
+              // const SizedBox(height: 8),
             ],
           ),
         );

@@ -94,6 +94,7 @@ class _ProfileState extends State<Profile> {
           },
         );
       },
+      onCancel: () {},
     );
   }
 
@@ -151,7 +152,7 @@ class _ProfileState extends State<Profile> {
                                       )
                                     : const DecorationImage(
                                         image: AssetImage(
-                                            'assets/images/google-icon.png'),
+                                            'assets/images/icon-app.png'),
                                         fit: BoxFit.fill,
                                       ),
                               ),
@@ -196,21 +197,17 @@ class _ProfileState extends State<Profile> {
                               title: 'Data Pengguna',
                               onTap: () async {
                                 final currentUserId = FirebaseAuth.instance
-                                    .currentUser?.uid; // Ambil userId terbaru
+                                    .currentUser?.uid; 
                                 if (currentUserId != null) {
-                                  // Pastikan tidak null
+                         
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      // Jika UserProfile juga butuh userId, kirim di sini
                                       builder: (context) => UserProfile(),
                                     ),
                                   );
-                                  // Refresh data pengguna setelah kembali dari UserProfile
-                                  // Menggunakan currentUserId yang valid
                                   fetchUserData(currentUserId);
                                 } else {
-                                  // Tangani jika pengguna tidak login
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                         content: Text(
@@ -235,7 +232,7 @@ class _ProfileState extends State<Profile> {
                                     MaterialPageRoute(
                                       builder: (context) => SavedBook(
                                         userId:
-                                            currentUserId, // Menggunakan currentUserId
+                                            currentUserId, 
                                       ),
                                     ),
                                   );
@@ -256,15 +253,15 @@ class _ProfileState extends State<Profile> {
                               onTap: () {
                                 final user = FirebaseAuth.instance.currentUser;
                                 final currentUserId =
-                                    user?.uid; // Menggunakan variabel lokal
+                                    user?.uid; 
                                 if (currentUserId != null) {
-                                  // Memeriksa null
+                               
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => LoanBook(
                                           userId:
-                                              currentUserId), // <-- PERBAIKAN DI SINI
+                                              currentUserId), 
                                     ),
                                   );
                                 } else {
@@ -293,20 +290,24 @@ class _ProfileState extends State<Profile> {
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 40),
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: TextButton(
-                          onPressed: () => _handleLogout(context),
-                          child: const Text(
-                            'Logout',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'InterBold',
-                              fontSize: 20,
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 5),
+                          child: TextButton(
+                            onPressed: () => _handleLogout(context),
+                            child: const Text(
+                              'Logout',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'InterBold',
+                                fontSize: 20,
+                              ),
                             ),
                           ),
                         ),

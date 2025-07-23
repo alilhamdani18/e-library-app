@@ -63,7 +63,7 @@ class _RegisterState extends State<Register> {
     if (resultUid != null) {
       showAwesomeLibraryDialog(
         context,
-        title: 'Register Berhasil!',
+        title: 'Registrasi Berhasil!',
         message: 'Silahkan login dengan akun Anda.',
         dialogType: DialogType.success,
         autoClose: true,

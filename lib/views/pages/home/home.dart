@@ -28,28 +28,28 @@ class _HomeState extends State<Home> {
   Map<String, dynamic>? _userData;
 
   final List<String> primaryCategories = [
+    'Islamic',
     'Novel',
     'Pendidikan',
-    'Manga',
     'Motivation',
-    'Fiksi',
+    'Kitab',
   ];
 
   final Map<String, IconData> categoryIconsMap = {
+    'Islamic': Icons.mosque_sharp,
     'Novel': Icons.auto_stories,
     'Pendidikan': Icons.science,
-    'Manga': Icons.history_edu,
-    'Motivation': Icons.computer,
-    'Fiksi': Icons.business_center,
-    'Lainnya': Icons.more_horiz,
+    'Motivation': Icons.person,
+    'Kitab': Icons.menu_book_rounded,
+    'Lainnya': Icons.reorder_sharp,
   };
 
   final Map<String, Color> categoryColorsMap = {
-    'Novel': Colors.blue,
-    'Pendidikan': Colors.green,
-    'Manga': Colors.orange,
-    'Motivation': Colors.purple,
-    'Fiksi': Colors.red,
+    'Islamic': Colors.green,
+    'Novel': Colors.pink,
+    'Pendidikan': Colors.amber,
+    'Motivation': Colors.blue,
+    'Kitab': Colors.orange,
     'Lainnya': Colors.grey,
   };
 
@@ -78,7 +78,7 @@ class _HomeState extends State<Home> {
           });
         }
       } catch (e) {
-        print('Error fetching user data: $e');
+        print('Error fetching user data');
       }
     } else {
       setState(() {
@@ -133,7 +133,7 @@ class _HomeState extends State<Home> {
       });
     } catch (e) {
       setState(() {
-        errorMessage = 'Gagal memuat data: $e';
+        errorMessage = 'Gagal memuat data buku. Silakan coba lagi.';
         isLoadingBooks = false;
       });
 
@@ -186,7 +186,7 @@ class _HomeState extends State<Home> {
                           onPressed: () async {
                             await Navigator.of(context).push(MaterialPageRoute(
                                 builder: (_) =>
-                                    const MainScreen(initialIndex: 2)));
+                                    const MainScreen(initialIndex: 3)));
                             _fetchUserData();
                           },
                           child:
@@ -197,15 +197,20 @@ class _HomeState extends State<Home> {
                     const SizedBox(height: 30),
                     Row(
                       children: [
-                        Text(
-                          'Selamat Datang, $userName',
-                          style: TextStyle(
-                              color: primaryColor,
-                              fontFamily: 'InterBold',
-                              fontSize: 24),
+                        Flexible(
+                          child: Text(
+                            'Selamat Datang, $userName',
+                            style: TextStyle(
+                                color: primaryColor,
+                                fontFamily: 'InterBold',
+                                fontSize: 22),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Text(
@@ -218,7 +223,7 @@ class _HomeState extends State<Home> {
                         )
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -240,7 +245,7 @@ class _HomeState extends State<Home> {
                                   style: TextStyle(
                                       color: Colors.amber,
                                       fontFamily: 'InterBold',
-                                      fontSize: 20),
+                                      fontSize: 18),
                                 ),
                                 const SizedBox(height: 8),
                                 ElevatedButton(
@@ -260,7 +265,7 @@ class _HomeState extends State<Home> {
                               ],
                             ),
                           ),
-                          Image.asset('assets/images/book.png', height: 120),
+                          Image.asset('assets/images/book.png', height: 110),
                         ],
                       ),
                     ),
@@ -272,7 +277,7 @@ class _HomeState extends State<Home> {
                           style: TextStyle(
                               color: primaryColor,
                               fontFamily: 'InterBold',
-                              fontSize: 18),
+                              fontSize: 16),
                         ),
                       ],
                     ),
@@ -286,7 +291,7 @@ class _HomeState extends State<Home> {
                           style: TextStyle(
                               color: primaryColor,
                               fontFamily: 'InterBold',
-                              fontSize: 18),
+                              fontSize: 16),
                         ),
                       ],
                     ),
@@ -301,7 +306,7 @@ class _HomeState extends State<Home> {
                           style: TextStyle(
                               color: primaryColor,
                               fontFamily: 'InterBold',
-                              fontSize: 18),
+                              fontSize: 16),
                         ),
                         TextButton(
                           onPressed: () {
@@ -311,7 +316,7 @@ class _HomeState extends State<Home> {
                           },
                           child: Text(
                             'Lihat Semua',
-                            style: TextStyle(fontSize: 16, color: primaryColor),
+                            style: TextStyle(fontSize: 14, color: primaryColor),
                           ),
                         )
                       ],
@@ -433,6 +438,7 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Build Component For Books From API Section
   Widget _buildBooksFromApiSection() {
     if (isLoadingBooks) {
       return Container(

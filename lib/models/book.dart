@@ -1,4 +1,3 @@
-// lib/models/book.dart
 class Book {
   final String id;
   final String title;
@@ -96,8 +95,6 @@ class BookResponse {
     );
   }
 }
-
-// Tambahkan fungsi bantu ini di luar class Book (atau bisa juga sebagai static method)
 double? _parseDouble(dynamic value) {
   if (value == null) return null;
   if (value is double) return value;

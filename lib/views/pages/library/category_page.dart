@@ -78,9 +78,9 @@ class CategoryBooksPage extends StatelessWidget {
                             author: book.author.isNotEmpty
                                 ? book.author
                                 : 'Penulis tidak diketahui',
-                            year: book.createdAt?.year.toString() ?? '',
+                            year: book.year?.toString() ?? '',
                             averageRating:
-                                book.averageRating?.toString() ?? '0.0',
+                                (book.averageRating)?.toString() ?? '0.0',
                             availableStock: book.availableStock,
                           ),
                         );

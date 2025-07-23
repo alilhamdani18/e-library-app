@@ -21,7 +21,7 @@ class BookCardSlide extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 20),
       child: SizedBox(
-        width: 120, // Menentukan lebar maksimal dari kontainer
+        width: 120, 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -66,7 +66,7 @@ class BookCardSlide extends StatelessWidget {
               ),
               softWrap: true,
               overflow: TextOverflow.ellipsis,
-              maxLines: 1, // Membatasi maksimal 2 baris
+              maxLines: 1, 
             ),
             Text(
               author,
@@ -77,7 +77,7 @@ class BookCardSlide extends StatelessWidget {
               ),
               softWrap: true,
               overflow: TextOverflow.ellipsis,
-              maxLines: 1, // Membatasi maksimal 2 baris
+              maxLines: 1, 
             ),
           ],
         ),

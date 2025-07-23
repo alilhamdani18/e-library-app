@@ -14,17 +14,15 @@ class PdfBookViewerPage extends StatefulWidget {
 
 class _PdfBookViewerPageState extends State<PdfBookViewerPage> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
-  // Menggunakan Map untuk menyimpan URL dan Title
   late Future<Map<String, String>?> _bookDataFuture;
 
   @override
   void initState() {
     super.initState();
     _bookDataFuture = _fetchBookData(
-        widget.bookId); // Panggil fungsi untuk mengambil data buku
+        widget.bookId); 
   }
 
-  // Fungsi untuk mengambil URL PDF dan Judul Buku dari Firestore
   Future<Map<String, String>?> _fetchBookData(String bookId) async {
     try {
       DocumentSnapshot bookDoc = await FirebaseFirestore.instance
@@ -40,14 +38,14 @@ class _PdfBookViewerPageState extends State<PdfBookViewerPage> {
 
         if (data != null) {
           bookFileUrl = data['bookFileUrl'] as String?;
-          title = data['title'] as String?; // Ambil field 'title'
+          title = data['title'] as String?; 
         }
 
         if (bookFileUrl != null && bookFileUrl.isNotEmpty) {
           return {
             'bookFileUrl': bookFileUrl,
             'title': title ??
-                'Judul Tidak Tersedia', // Berikan default jika title null
+                'Judul Tidak Tersedia', 
           };
         } else {
           debugPrint(
@@ -71,21 +69,21 @@ class _PdfBookViewerPageState extends State<PdfBookViewerPage> {
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         title: FutureBuilder<Map<String, String>?>(
-          future: _bookDataFuture, // Menggunakan FutureBuilder untuk judul juga
+          future: _bookDataFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Text(
-                  'Memuat Judul...'); // Teks sementara saat loading
+                  'Memuat Judul...'); 
             } else if (snapshot.hasData && snapshot.data != null) {
               return Text(snapshot.data!['title'] ?? 'Judul Tidak Tersedia');
             } else {
-              return const Text('Pembaca PDF'); // Judul default jika gagal
+              return const Text('Pembaca PDF'); 
             }
           },
         ),
       ),
       body: FutureBuilder<Map<String, String>?>(
-        future: _bookDataFuture, // Menggunakan FutureBuilder yang sama
+        future: _bookDataFuture, 
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

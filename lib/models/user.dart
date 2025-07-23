@@ -1,18 +1,18 @@
 class User {
   final String? username;
-  final String uid; // Menggunakan uid sebagai ID utama, bukan hanya 'id'
+  final String uid; 
   String email;
   final String? name;
   final String? phone;
   final String? address;
   String? profileImageUrl;
   final DateTime? createdAt;
-  DateTime? updatedAt; // Pastikan ini juga final
+  DateTime? updatedAt; 
 
   User({
     this.username,
-    required this.uid, // Pastikan ini required jika selalu ada
-    required this.email, // Pastikan ini required jika selalu ada
+    required this.uid,
+    required this.email, 
     this.name,
     this.phone,
     this.address,
@@ -22,24 +22,22 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    // Helper function to parse Firestore Timestamps
     DateTime? parseTimestamp(dynamic timestampData) {
       if (timestampData is Map<String, dynamic> &&
           timestampData.containsKey('_seconds')) {
         return DateTime.fromMillisecondsSinceEpoch(
             (timestampData['_seconds'] as int) * 1000);
       } else if (timestampData is String) {
-        // Handle ISO 8601 string if backend sends it directly
         return DateTime.tryParse(timestampData);
       }
       return null;
     }
 
     return User(
-      username: json['username']?.toString(), // Opsional, bisa null
+      username: json['username']?.toString(), 
       uid: json['uid']?.toString() ??
           json['id']?.toString() ??
-          '', // Ambil dari 'uid' atau 'id'
+          '', 
       email: json['email']?.toString() ?? '',
       name: json['name']?.toString(),
       phone: json['phone']?.toString(),
@@ -47,7 +45,7 @@ class User {
       profileImageUrl: json['profileImageUrl']?.toString(),
       createdAt: parseTimestamp(json['createdAt']),
       updatedAt:
-          parseTimestamp(json['updatedAt']), // <--- Sekarang parsing updatedAt
+          parseTimestamp(json['updatedAt']), 
     );
   }
 
@@ -62,11 +60,9 @@ class User {
       'profileImageUrl': profileImageUrl,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt':
-          updatedAt?.toIso8601String(), // <--- Sekarang menyertakan updatedAt
+          updatedAt?.toIso8601String(), 
     };
   }
-
-  // --- Metode copyWith ---
   User copyWith({
     String? username,
     String? uid,
@@ -76,26 +72,22 @@ class User {
     String? address,
     String? profileImageUrl,
     DateTime? createdAt,
-    DateTime? updatedAt, // Tambahkan updatedAt di copyWith
+    DateTime? updatedAt, 
   }) {
     return User(
       username: username ?? this.username,
       uid: uid ??
-          this.uid, // Pastikan UID juga bisa di-update jika diperlukan (walau jarang)
+          this.uid, 
       email: email ?? this.email,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       address: address ?? this.address,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt, // Gunakan updatedAt di copyWith
+      updatedAt: updatedAt ?? this.updatedAt, 
     );
   }
 }
-
-// Tidak ada perubahan pada UserResponse dan SingleUserResponse
-// karena mereka sudah bekerja dengan List<User> atau User tunggal
-// dan parsing JSON mereka tampak sudah benar untuk struktur respons Anda.
 
 class UserResponse {
   final bool success;

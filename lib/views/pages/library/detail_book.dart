@@ -1,6 +1,8 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:e_library/models/book.dart';
 import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
+import 'package:e_library/utils/dialog.dart';
 import 'package:e_library/views/pages/library/pdfViewer.dart';
 import 'package:e_library/widgets/loan_book_sheet.dart';
 import 'package:e_library/widgets/rating_bottom_sheet.dart';
@@ -307,6 +309,7 @@ class _DetailsBookState extends State<DetailsBook> {
                                         showModalBottomSheet(
                                           context: context,
                                           backgroundColor: Colors.transparent,
+                                          isScrollControlled: true,
                                           builder: (context) =>
                                               BottomSheetLoanBook(
                                             bookId: book!.id,
@@ -357,14 +360,12 @@ class _DetailsBookState extends State<DetailsBook> {
                                           ),
                                         );
                                       } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'File PDF tidak tersedia untuk buku ini.'),
-                                            backgroundColor: Colors.red,
-                                          ),
-                                        );
+                                        showAwesomeLibraryDialog(context,
+                                            title: 'Info',
+                                            message:
+                                                'File Pdf tidak tersedia untuk buku ini. Silahkan ajukan pinjaman',
+                                            dialogType: DialogType.info,
+                                            onOk: () {});
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
@@ -407,7 +408,10 @@ class _DetailsBookState extends State<DetailsBook> {
                                     valueColor: primaryColor),
                                 _infoColumn(
                                     Icons.calendar_month_rounded,
-                                    book!.year?.toString() ?? '-',
+                                    book!.year != null &&
+                                            book!.year!.toString().isNotEmpty
+                                        ? book!.year.toString()
+                                        : '-',
                                     'Tahun Terbit',
                                     iconColor: Colors.blue.shade700,
                                     valueColor: primaryColor),
@@ -453,7 +457,7 @@ class _DetailsBookState extends State<DetailsBook> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'Sinopsis',
+                              'Deskripsi',
                               style: TextStyle(
                                   fontSize: 18,
                                   fontFamily: 'InterBold',

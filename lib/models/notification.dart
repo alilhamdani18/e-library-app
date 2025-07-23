@@ -27,13 +27,12 @@ class AppNotification {
     return AppNotification(
       id: json['id'] as String,
       userId: json['userId'] as String,
-      loanId: json['loanId'] as String?, // Firestore mengirimkan null jika tidak ada
+      loanId: json['loanId'] as String?, 
       message: json['message'] as String,
       type: json['type'] as String,
       librarianName: json['librarianName'] as String,
       librarianProfileImageUrl: json['librarianProfileImageUrl'] as String?,
       isRead: json['isRead'] as bool,
-      // Konversi timestamp dari Firestore (jika berupa map { _seconds, _nanoseconds }) atau String ISO
       timestamp: json['timestamp'] is Map
           ? DateTime.fromMillisecondsSinceEpoch(json['timestamp']['_seconds'] * 1000)
           : DateTime.parse(json['timestamp'].toString()), // Jika backend mengembalikan ISO string

@@ -1,6 +1,4 @@
-// lib/screens/notifications_page.dart
-
-import 'package:e_library/models/notification.dart'; // Pastikan ini mengarah ke model baru
+import 'package:e_library/models/notification.dart';
 import 'package:e_library/services/api_service.dart';
 import 'package:e_library/utils/colors.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +21,7 @@ class _NotificationsState extends State<Notifications> {
   String? _errorMessage;
 
   @override
+
   void initState() {
     super.initState();
     _currentUser = FirebaseAuth.instance.currentUser;
@@ -41,7 +40,6 @@ class _NotificationsState extends State<Notifications> {
     });
     try {
       if (_currentUser != null) {
-        // Panggil getUserNotifications dari ApiService yang sudah diperbarui
         final fetchedNotifications =
             await _apiService.getUserNotifications(_currentUser!.uid);
         setState(() {
@@ -77,22 +75,29 @@ class _NotificationsState extends State<Notifications> {
     }
   }
 
-  Future<bool> _deleteNotification(String notificationId, int index) async {
-    final AppNotification originalNotification = _notifications[index];
+  Future<bool> _deleteNotification(String notificationId) async {
+    final int? indexToDelete =
+        _notifications.indexWhere((n) => n.id == notificationId);
+
+    if (indexToDelete == -1 || indexToDelete == null) {
+      return false;
+    }
+
+    final AppNotification originalNotification = _notifications[indexToDelete];
 
     final bool confirmDelete = await showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("Hapus Notifikasi?"),
-              content: Text(
+              title: const Text("Hapus Notifikasi?"),
+              content: const Text(
                   "Apakah Anda yakin ingin menghapus notifikasi ini secara permanen?"),
               actions: <Widget>[
                 TextButton(
-                  child: Text("Batal", style: TextStyle(color: textGreyColor)),
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
+                  child: Text("Batal", style: TextStyle(color: textGreyColor)),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -101,40 +106,38 @@ class _NotificationsState extends State<Notifications> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text("Hapus", style: TextStyle(color: Colors.white)),
                   onPressed: () {
                     Navigator.of(context).pop(true);
                   },
+                  child: const Text("Hapus",
+                      style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
           },
         ) ??
-        false;
+        false; 
 
     if (!confirmDelete) {
-      return false; // Pengguna membatalkan
+      return false; 
     }
 
-    // Hapus dari UI (optimistic update)
     setState(() {
-      _notifications.removeAt(index);
+      _notifications.removeAt(indexToDelete);
     });
 
     try {
-      // Panggil API untuk menghapus notifikasi dari koleksi NOTIFICATIONS
       await _apiService.deleteNotification(notificationId);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text("Notifikasi berhasil dihapus."),
           backgroundColor: Colors.green,
         ),
       );
-      return true; // Berhasil dihapus dari backend
+      return true; 
     } catch (e) {
-      // Jika gagal di backend, kembalikan notifikasi ke UI
       setState(() {
-        _notifications.insert(index, originalNotification);
+        _notifications.insert(indexToDelete, originalNotification);
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -199,7 +202,8 @@ class _NotificationsState extends State<Notifications> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
+        automaticallyImplyLeading: false,
+        title: const Text(
           'Notifikasi',
           style: TextStyle(
               color: Colors.white, fontFamily: 'InterBold', fontSize: 20),
@@ -220,12 +224,14 @@ class _NotificationsState extends State<Notifications> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline, color: Colors.red, size: 48),
-                        SizedBox(height: 8),
+                        const Icon(Icons.error_outline,
+                            color: Colors.red, size: 48),
+                        const SizedBox(height: 8),
                         Text(_errorMessage!,
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.red, fontSize: 16)),
-                        SizedBox(height: 16),
+                            style: const TextStyle(
+                                color: Colors.red, fontSize: 16)),
+                        const SizedBox(height: 16),
                         if (_currentUser == null)
                           ElevatedButton(
                             onPressed: () {
@@ -238,7 +244,7 @@ class _NotificationsState extends State<Notifications> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: Text('Login Sekarang',
+                            child: const Text('Login Sekarang',
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontFamily: 'InterSemiBold')),
@@ -252,7 +258,7 @@ class _NotificationsState extends State<Notifications> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: Text('Coba Lagi',
+                            child: const Text('Coba Lagi',
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontFamily: 'InterSemiBold')),
@@ -271,7 +277,7 @@ class _NotificationsState extends State<Notifications> {
                             Icon(Icons.notifications_off_outlined,
                                 color: textGreyColor.withOpacity(0.6),
                                 size: 60),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               'Tidak ada notifikasi saat ini.',
                               style: TextStyle(
@@ -280,7 +286,7 @@ class _NotificationsState extends State<Notifications> {
                                 fontFamily: 'InterSemiBold',
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
                               'Kami akan memberitahumu jika ada pembaruan status pinjaman.',
                               textAlign: TextAlign.center,
@@ -306,123 +312,108 @@ class _NotificationsState extends State<Notifications> {
                           final notificationIcon =
                               _getNotificationIcon(notification.type);
 
-                          return Dismissible(
-                            key: Key(notification.id),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              color: Colors.red,
-                              child: const Icon(Icons.delete,
-                                  color: Colors.white, size: 30),
+                          // Mengganti Dismissible dengan InkWell untuk long press
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: notification.isRead
+                                  ? Colors.white
+                                  : notificationColor.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                              border: notification.isRead
+                                  ? null
+                                  : Border.all(
+                                      color: notificationColor.withOpacity(0.5),
+                                      width: 1),
                             ),
-                            confirmDismiss: (direction) async {
-                              // Panggil fungsi deleteNotification yang sudah diperbarui
-                              return await _deleteNotification(
-                                  notification.id, index);
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: notification.isRead
-                                    ? Colors.white
-                                    : notificationColor.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                                border: notification.isRead
-                                    ? null
-                                    : Border.all(
+                            child: InkWell(
+                              onTap: () {
+                                if (!notification.isRead) {
+                                  _markAsRead(notification.id);
+                                }
+                              },
+                              onLongPress: () {
+                                // Panggil fungsi _deleteNotification saat long press
+                                _deleteNotification(notification.id);
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
                                         color:
-                                            notificationColor.withOpacity(0.5),
-                                        width: 1),
-                              ),
-                              child: InkWell(
-                                onTap: () {
-                                  if (!notification.isRead) {
-                                    _markAsRead(notification.id);
-                                  }
-                                },
-                                borderRadius: BorderRadius.circular(12),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: notificationColor
-                                              .withOpacity(0.2),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(notificationIcon,
-                                            color: notificationColor, size: 28),
+                                            notificationColor.withOpacity(0.2),
+                                        shape: BoxShape.circle,
                                       ),
-                                      SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              notification.librarianName,
+                                      child: Icon(notificationIcon,
+                                          color: notificationColor, size: 28),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            notification.librarianName,
+                                            style: TextStyle(
+                                              fontFamily: 'InterBold',
+                                              fontSize: 16,
+                                              color: primaryColor,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            notification.message,
+                                            style: TextStyle(
+                                              fontFamily: 'InterRegular',
+                                              fontSize: 14,
+                                              color: textGreyColor,
+                                              fontWeight: notification.isRead
+                                                  ? FontWeight.normal
+                                                  : FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Align(
+                                            alignment: Alignment.bottomRight,
+                                            child: Text(
+                                              _formatTimestamp(
+                                                  notification.timestamp),
                                               style: TextStyle(
-                                                fontFamily: 'InterBold',
-                                                fontSize: 16,
-                                                color: primaryColor,
+                                                fontFamily: 'InterLight',
+                                                fontSize: 12,
+                                                color: textGreyColor
+                                                    .withOpacity(0.7),
                                               ),
                                             ),
-                                            SizedBox(height: 6),
-                                            Text(
-                                              notification.message,
-                                              style: TextStyle(
-                                                fontFamily: 'InterRegular',
-                                                fontSize: 14,
-                                                color: textGreyColor,
-                                                fontWeight: notification.isRead
-                                                    ? FontWeight.normal
-                                                    : FontWeight.bold,
-                                              ),
-                                            ),
-                                            SizedBox(height: 8),
-                                            Align(
-                                              alignment: Alignment.bottomRight,
-                                              child: Text(
-                                                _formatTimestamp(
-                                                    notification.timestamp),
-                                                style: TextStyle(
-                                                  fontFamily: 'InterLight',
-                                                  fontSize: 12,
-                                                  color: textGreyColor
-                                                      .withOpacity(0.7),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                      if (!notification.isRead)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 8.0, top: 4),
-                                          child: Icon(Icons.circle,
-                                              size: 10,
-                                              color: notificationColor),
-                                        ),
-                                    ],
-                                  ),
+                                    ),
+                                    if (!notification.isRead)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 8.0, top: 4),
+                                        child: Icon(Icons.circle,
+                                            size: 10, color: notificationColor),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),
