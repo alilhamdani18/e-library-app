@@ -99,7 +99,9 @@ class _LoginState extends State<Login> {
           okText: 'Kirim Ulang',
           cancelText: 'Nanti',
           onOk: () async {
-            Navigator.of(context).pop();
+            // Hapus Navigator.pop(context); di sini, karena pushAndRemoveUntil akan menangani penutupan dialog
+            // Navigator.pop(context);
+
             try {
               await AuthService().sendEmailVerification();
               if (!mounted) return;
@@ -116,10 +118,24 @@ class _LoginState extends State<Login> {
                         'Gagal mengirim ulang email verifikasi: ${sendError.toString()}')),
               );
             }
+            // Setelah mengirim ulang email, pastikan kita kembali ke halaman Login
+            if (!mounted) return; // Periksa mounted lagi sebelum navigasi
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const Login()),
+              (Route<dynamic> route) =>
+                  false, // Hapus semua rute di bawah Login
+            );
           },
           onCancel: () {
-            if (!mounted) return;
-            Navigator.of(context).pop();
+            // Hapus Navigator.pop(context); di sini
+            // Navigator.pop(context);
+
+            if (!mounted) return; // Periksa mounted lagi sebelum navigasi
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const Login()),
+              (Route<dynamic> route) =>
+                  false, // Hapus semua rute di bawah Login
+            );
           },
         );
         return;
@@ -133,7 +149,8 @@ class _LoginState extends State<Login> {
       } else if (e.code == 'invalid-email') {
         errorMessage = 'Format email tidak valid.';
       } else {
-        errorMessage = e.message ?? 'Terjadi kesalahan tidak dikenal saat login.';
+        errorMessage =
+            e.message ?? 'Terjadi kesalahan tidak dikenal saat login.';
       }
 
       showAwesomeLibraryDialog(

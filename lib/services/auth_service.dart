@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // Tetap diperlukan untuk debugPrint
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -10,7 +10,6 @@ class AuthService {
     return _auth.authStateChanges();
   }
 
-  // Fungsi untuk mengirim email verifikasi
   Future<void> sendEmailVerification() async {
     User? user = _auth.currentUser;
     if (user != null && !user.emailVerified) {
@@ -18,11 +17,12 @@ class AuthService {
         await user.sendEmailVerification();
         debugPrint('Email verifikasi berhasil dikirim ke: ${user.email}');
       } on FirebaseAuthException catch (e) {
-        debugPrint('Firebase Auth Error (Send Email Verification): ${e.code} - ${e.message}');
-        rethrow; // Lempar ulang error agar bisa ditangani di UI
+        debugPrint(
+            'Firebase Auth Error (Send Email Verification): ${e.code} - ${e.message}');
+        rethrow;
       } catch (e) {
         debugPrint('General Error (Send Email Verification): $e');
-        rethrow; // Lempar ulang error agar bisa ditangani di UI
+        rethrow;
       }
     }
   }
@@ -39,24 +39,24 @@ class AuthService {
       User? user = userCredential.user;
 
       if (user != null) {
+        // Kirim email verifikasi segera setelah akun dibuat di Firebase Auth
         await user.sendEmailVerification();
+        debugPrint('Email verifikasi berhasil dikirim ke: ${user.email}');
 
-        await _firestore.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'name': name,
-          'email': email,
-          'emailVerified': user.emailVerified,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+        // --- MENAMBAHKAN: Simpan nama pengguna sebagai displayName ---
+        await user.updateDisplayName(name);
+        debugPrint(
+            'Nama pengguna (${name}) berhasil disimpan sebagai displayName.');
+
         return user.uid;
       }
       return null;
     } on FirebaseAuthException catch (e) {
       debugPrint('Firebase Auth Error (Sign Up): ${e.code} - ${e.message}');
-      return null;
+      rethrow; // Lempar ulang exception
     } catch (e) {
       debugPrint('General Error (Sign Up): $e');
-      return null;
+      rethrow; // Lempar ulang exception
     }
   }
 
@@ -68,21 +68,48 @@ class AuthService {
 
       User? user = userCredential.user;
 
-      // --- START: Perubahan di sini untuk verifikasi email ---
-      if (user != null && !user.emailVerified) {
-        // Jika email belum diverifikasi, logout pengguna dan lempar error
-        await _auth.signOut(); // Logout pengguna secara otomatis
-        throw FirebaseAuthException(
-          code: 'email-not-verified',
-          message: 'Email Anda belum diverifikasi. Silakan cek email Anda untuk tautan verifikasi.',
-        );
+      if (user != null) {
+        // PERIKSA STATUS VERIFIKASI EMAIL SAAT LOGIN
+        if (!user.emailVerified) {
+          // Jika email belum diverifikasi, logout pengguna dan lempar error
+          await _auth.signOut(); // Logout pengguna secara otomatis
+          throw FirebaseAuthException(
+            code: 'email-not-verified',
+            message:
+                'Email Anda belum diverifikasi. Silakan cek email Anda untuk tautan verifikasi.',
+          );
+        } else {
+          // Email sudah diverifikasi, sekarang simpan data pengguna ke Firestore jika belum ada
+          DocumentSnapshot userDoc =
+              await _firestore.collection('users').doc(user.uid).get();
+
+          if (!userDoc.exists) {
+            // Jika dokumen pengguna belum ada di Firestore, buatlah
+            await _firestore.collection('users').doc(user.uid).set({
+              'uid': user.uid,
+              'email': user.email,
+              'name': user
+                  .displayName, // --- MENAMBAHKAN: Ambil nama dari displayName ---
+              'emailVerified': user.emailVerified,
+              'createdAt': FieldValue.serverTimestamp(),
+              'lastLogin': FieldValue.serverTimestamp(),
+            });
+            debugPrint(
+                'Data pengguna baru disimpan ke Firestore setelah verifikasi: ${user.email}');
+          } else {
+            // Jika dokumen sudah ada, Anda bisa update timestamp login terakhir
+            await _firestore.collection('users').doc(user.uid).update({
+              'lastLogin': FieldValue.serverTimestamp(),
+            });
+            debugPrint('Data pengguna di Firestore diperbarui: ${user.email}');
+          }
+        }
       }
-      // --- END: Perubahan di sini ---
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
       debugPrint('Firebase Auth Error (Sign In): ${e.code} - ${e.message}');
-      throw e; // Tetap lempar exception untuk ditangani di UI
+      rethrow; // Tetap lempar exception untuk ditangani di UI
     } catch (e) {
       debugPrint('General Error (Sign In): $e');
       throw Exception('Terjadi kesalahan tidak terduga saat login: $e');
