@@ -21,6 +21,13 @@ class _LoginState extends State<Login> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _handleLogin() async {
     final email = emailController.text.trim();
     final password = passwordController.text;
@@ -49,6 +56,7 @@ class _LoginState extends State<Login> {
 
     try {
       await AuthService().signInWithEmail(email, password);
+
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -56,7 +64,7 @@ class _LoginState extends State<Login> {
 
       showAwesomeLibraryDialog(
         context,
-        title: 'Login Berhasil! 🎉', 
+        title: 'Login Berhasil! 🎉',
         message: 'Selamat datang!',
         dialogType: DialogType.success,
         autoClose: true,
@@ -71,28 +79,66 @@ class _LoginState extends State<Login> {
         },
       );
     } on FirebaseAuthException catch (e) {
-      // Tangani exception spesifik dari Firebase Authentication
-      String errorMessage;
-      if (e.code == 'user-not-found') {
-        errorMessage = 'Email tidak ditemukan.';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'Password salah.';
-      } else if (e.code == 'invalid-email') {
-        errorMessage = 'Format email tidak valid.';
-      } else if (e.code == 'invalid-credential') {
-        errorMessage = 'Email atau password salah.';
-      } else {
-        errorMessage = e.message ?? 'Terjadi kesalahan tidak dikenal.';
-      }
-
       if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
 
+      String errorMessage;
+
+      // Penanganan untuk email yang belum diverifikasi
+      if (e.code == 'email-not-verified') {
+        showAwesomeLibraryDialog(
+          context,
+          title: 'Verifikasi Email Diperlukan ✉️',
+          message:
+              'Akun Anda belum aktif. Mohon verifikasi email Anda (${email}) untuk melanjutkan. '
+              'Ingin mengirim ulang email verifikasi?',
+          dialogType: DialogType.info,
+          showCancelBtn: true,
+          okText: 'Kirim Ulang',
+          cancelText: 'Nanti',
+          onOk: () async {
+            Navigator.of(context).pop();
+            try {
+              await AuthService().sendEmailVerification();
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text(
+                        'Email verifikasi berhasil dikirim ulang. Silakan cek kotak masuk Anda.')),
+              );
+            } catch (sendError) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(
+                        'Gagal mengirim ulang email verifikasi: ${sendError.toString()}')),
+              );
+            }
+          },
+          onCancel: () {
+            if (!mounted) return;
+            Navigator.of(context).pop();
+          },
+        );
+        return;
+      }
+
+      // Tangani exception spesifik dari Firebase Authentication lainnya
+      if (e.code == 'user-not-found' ||
+          e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        errorMessage = 'Email atau password salah.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'Format email tidak valid.';
+      } else {
+        errorMessage = e.message ?? 'Terjadi kesalahan tidak dikenal saat login.';
+      }
+
       showAwesomeLibraryDialog(
         context,
-        title: 'Login Gagal 😞', // Emoji untuk gagal
+        title: 'Login Gagal 😞',
         message: errorMessage,
         dialogType: DialogType.error,
         autoClose: true,
@@ -107,20 +153,13 @@ class _LoginState extends State<Login> {
 
       showAwesomeLibraryDialog(
         context,
-        title: 'Login Gagal 🚨', 
+        title: 'Login Gagal 🚨',
         message: 'Terjadi kesalahan tidak terduga: ${e.toString()}',
         dialogType: DialogType.error,
         autoClose: true,
         onOk: () {},
       );
     }
-  }
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 
   @override

@@ -38,7 +38,7 @@ class _LibraryState extends State<Library> {
     'Motivation',
     'Pendidikan',
     'Kitab',
-    'Lainnya', 
+    'Lainnya',
   ];
 
   @override
@@ -65,15 +65,14 @@ class _LibraryState extends State<Library> {
       errorMessage = '';
     });
     try {
-      final books =
-          await _apiService.getBooks(); 
+      final books = await _apiService.getBooks();
       setState(() {
         allBooks = books;
-        categorizedBooks.clear();  
+        categorizedBooks.clear();
         for (var category in primaryCategories) {
-          categorizedBooks[category] = []; 
+          categorizedBooks[category] = [];
         }
-        categorizedBooks['Lainnya'] = []; 
+        categorizedBooks['Lainnya'] = [];
         for (var book in books) {
           bool assigned = false;
           if (book.category != null) {
@@ -81,7 +80,7 @@ class _LibraryState extends State<Library> {
               if (book.category!.toLowerCase() == category.toLowerCase()) {
                 categorizedBooks[category]!.add(book);
                 assigned = true;
-                break; 
+                break;
               }
             }
           }
@@ -253,23 +252,23 @@ class _LibraryState extends State<Library> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.all(8),
-                  child: GestureDetector(
-                    onTap: () {
-                      _filterBooks(_searchController.text);
-                    },
-                    child: const Icon(
-                      Icons.search,
-                      size: 40,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                // Container(
+                //   decoration: BoxDecoration(
+                //     color: primaryColor,
+                //     borderRadius: BorderRadius.circular(10),
+                //   ),
+                //   padding: const EdgeInsets.all(8),
+                //   child: GestureDetector(
+                //     onTap: () {
+                //       _filterBooks(_searchController.text);
+                //     },
+                //     child: const Icon(
+                //       Icons.search,
+                //       size: 40,
+                //       color: Colors.white,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(height: 20),
@@ -307,8 +306,7 @@ class _LibraryState extends State<Library> {
                             fontSize: 18,
                           ),
                         ),
-                        if (booksInCategory.length >
-                            5) 
+                        if (booksInCategory.length > 5)
                           TextButton(
                             onPressed: () {
                               Navigator.push(
