@@ -16,7 +16,7 @@ class Register extends StatefulWidget {
 class _RegisterState extends State<Register> {
   bool isHide = true;
   bool isConfirmHide = true;
-  bool _isLoading = false; 
+  bool _isLoading = false;
 
   TextEditingController userController = TextEditingController();
   TextEditingController emailController = TextEditingController();
@@ -173,8 +173,13 @@ class _RegisterState extends State<Register> {
                         padding: const EdgeInsets.fromLTRB(16, 56, 16, 16),
                         child: Column(
                           children: [
-                            Image.asset('assets/images/logo.png',
-                                width: 100, height: 100),
+                            Image.network(
+                              'https://storage.googleapis.com/image-bucket-app/logo.png',
+                              width: 100,
+                              height: 100,
+                            ),
+                            // Image.asset('assets/images/logo.png',
+                            //     width: 100, height: 100),
                             Text(
                               'Selamat Datang',
                               style: TextStyle(
@@ -211,11 +216,11 @@ class _RegisterState extends State<Register> {
                               ],
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.only(bottom: 6),
                               child: TextFormField(
                                 controller: userController,
                                 decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.all(8),
+                                    contentPadding: const EdgeInsets.all(6),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: const BorderSide(
@@ -251,12 +256,12 @@ class _RegisterState extends State<Register> {
                               ],
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.only(bottom: 6),
                               child: TextFormField(
                                 controller: emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.all(8),
+                                    contentPadding: const EdgeInsets.all(6),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: const BorderSide(
@@ -292,9 +297,7 @@ class _RegisterState extends State<Register> {
                               ],
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom:
-                                      8), // Changed from 16 to 8 for spacing
+                              padding: const EdgeInsets.only(bottom: 6),
                               child: TextFormField(
                                 controller: passwordController,
                                 obscureText: isHide,
@@ -311,7 +314,7 @@ class _RegisterState extends State<Register> {
                                               : Icons.visibility_off_outlined,
                                           color: textGreyColor,
                                         )),
-                                    contentPadding: const EdgeInsets.all(8),
+                                    contentPadding: const EdgeInsets.all(6),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: const BorderSide(
@@ -348,12 +351,10 @@ class _RegisterState extends State<Register> {
                               ],
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom: 16), // Padding bottom for this field
+                              padding: const EdgeInsets.only(bottom: 16),
                               child: TextFormField(
                                 controller: confirmPasswordController,
-                                obscureText:
-                                    isConfirmHide, // Gunakan flag visibilitas baru
+                                obscureText: isConfirmHide,
                                 decoration: InputDecoration(
                                     suffixIcon: IconButton(
                                         onPressed: () {
@@ -368,7 +369,7 @@ class _RegisterState extends State<Register> {
                                               : Icons.visibility_off_outlined,
                                           color: textGreyColor,
                                         )),
-                                    contentPadding: const EdgeInsets.all(8),
+                                    contentPadding: const EdgeInsets.all(6),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: const BorderSide(

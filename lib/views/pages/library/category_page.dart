@@ -68,7 +68,7 @@ class CategoryBooksPage extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final book = books[index];
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.only(bottom: 6),
                           child: BookCard(
                             bookId: book.id,
                             image: book.coverUrl ?? '',

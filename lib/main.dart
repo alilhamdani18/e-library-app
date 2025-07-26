@@ -30,8 +30,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Widget _initialWidget = const Scaffold(
-      body: Center(child: CircularProgressIndicator())); // Widget loading awal
-
+      body: Center(child: CircularProgressIndicator())); 
+      
   @override
   void initState() {
     super.initState();

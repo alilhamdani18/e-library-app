@@ -23,11 +23,10 @@ class _UserProfileState extends State<UserProfile> {
   bool _isUpdating = false;
 
   final fb.FirebaseAuth _auth =
-      fb.FirebaseAuth.instance; // Inisialisasi Firebase Auth
-
+      fb.FirebaseAuth.instance; 
   Future<void> getUserData() async {
     try {
-      final fbUser = _auth.currentUser; // Gunakan _auth
+      final fbUser = _auth.currentUser; 
       if (fbUser == null) {
         setState(() {
           isLoading = false;
@@ -65,7 +64,6 @@ class _UserProfileState extends State<UserProfile> {
     getUserData();
   }
 
-  // --- Start of New Feature: Change Password ---
   Future<void> _showChangePasswordSheet() async {
     final TextEditingController oldPasswordController = TextEditingController();
     final TextEditingController newPasswordController = TextEditingController();
@@ -85,7 +83,7 @@ class _UserProfileState extends State<UserProfile> {
         autoClose: true,
         autoCloseDelay: const Duration(seconds: 3),
         onOk: () {
-          Navigator.pop(context); // Tutup dialog
+          Navigator.pop(context); 
         },
       );
       return;
@@ -101,7 +99,7 @@ class _UserProfileState extends State<UserProfile> {
       builder: (context) => DraggableScrollableSheet(
         expand: false,
         maxChildSize: 0.85,
-        // initialChildSize: 0.60,
+        initialChildSize: 0.60,
         builder: (_, scrollController) => StatefulBuilder(
           builder: (BuildContext context, StateSetter modalSetState) {
             return Padding(
@@ -601,8 +599,7 @@ class _UserProfileState extends State<UserProfile> {
 
         if (mounted) {
           setState(() {
-            _isUpdating = false; // Nonaktifkan loading state
-
+            _isUpdating = false; 
             if (user != null && newProfileImageUrl != null) {
               user = user!.copyWith(
                 profileImageUrl: newProfileImageUrl,

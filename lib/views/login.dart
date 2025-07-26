@@ -196,8 +196,13 @@ class _LoginState extends State<Login> {
                 padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
                 child: Column(
                   children: [
-                    Image.asset('assets/images/logo.png',
-                        width: 150, height: 150),
+                    Image.network(
+                      'https://storage.googleapis.com/image-bucket-app/logo.png',
+                      width: 150,
+                      height: 150,
+                    ),
+                    // Image.asset('assets/images/logo.png',
+                    //     width: 150, height: 150),
                     Text(
                       'Selamat Datang',
                       style: TextStyle(

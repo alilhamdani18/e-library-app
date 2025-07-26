@@ -174,7 +174,10 @@ class _HomeState extends State<Home> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Image.asset('assets/images/logo.png', width: 50),
+                        Image.network(
+                            'https://storage.googleapis.com/image-bucket-app/logo.png',
+                            width: 50),
+                        // Image.asset('assets/images/logo.png', width: 50),
                         Text(
                           'E-Library',
                           style: TextStyle(
@@ -210,7 +213,7 @@ class _HomeState extends State<Home> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     Row(
                       children: [
                         Text(
@@ -223,7 +226,7 @@ class _HomeState extends State<Home> {
                         )
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -265,7 +268,12 @@ class _HomeState extends State<Home> {
                               ],
                             ),
                           ),
-                          Image.asset('assets/images/book.png', height: 110),
+                          Image.network(
+                            'https://storage.googleapis.com/image-bucket-app/book.png',
+                            height: 110,
+                            fit: BoxFit.cover,
+                          ),
+                          // Image.asset('assets/images/book.png', height: 110),
                         ],
                       ),
                     ),
